@@ -13,8 +13,14 @@ const MIME: Record<string, string> = {
   '.woff2': 'font/woff2',
 };
 
-Bun.serve({
-  port: Number(process.env.PORT ?? 8000),
+// Loopback by default so the deck never faces the LAN; probes opt out via HOST=0.0.0.0
+// (docker headless-shell reaches us through host.docker.internal, which is not loopback).
+const hostname = process.env.HOST ?? '127.0.0.1';
+const port = Number(process.env.PORT ?? 8000);
+
+const server = Bun.serve({
+  hostname,
+  port,
   async fetch(req) {
     const path = new URL(req.url).pathname;
     // "/" → index.html; everything else resolved under root; no traversal cleanup needed
@@ -28,4 +34,6 @@ Bun.serve({
   },
 });
 
-console.log(`deck → http://localhost:${process.env.PORT ?? 8000}`);
+// 0.0.0.0 isn't browsable; show localhost for that case only.
+const shownHost = hostname === '0.0.0.0' ? 'localhost' : hostname;
+console.log(`deck → http://${shownHost}:${server.port}`);

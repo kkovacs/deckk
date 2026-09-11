@@ -1,6 +1,6 @@
 # AGENTS.md — deckk (KK's deck)
 
-Zero-dependency reveal.js 5.2.1 presentation deck. The deck IS the documentation: a capability showcase (~32 slides) in four sections — 01 mechanisms (system behaviors), 02 every block full-width, 03+04 the working pairs (reading / pictures & code) — plus a closing dark 2-col thank-you. `bun run serve.ts` serves it (default `:8000`, `PORT` env overrides). No package.json; nothing to install.
+Zero-dependency reveal.js presentation deck (pinned release, see **Updating vendored files**). The deck IS the documentation: a capability showcase (~32 slides) in four sections — 01 mechanisms (system behaviors), 02 every block full-width, 03+04 the working pairs (reading / pictures & code) — plus a closing dark 2-col thank-you. `bun run serve.ts` serves it (default `:8000`, `PORT` env overrides). No package.json; nothing to install.
 
 `tests/` holds the verification suite; `out/` holds its outputs (screenshots, exported PDF). `assets/` holds real images (tall.jpg / wide.jpg are deliberate wrong-shape test assets).
 
@@ -15,7 +15,7 @@ Zero-dependency reveal.js 5.2.1 presentation deck. The deck IS the documentation
 
 - `index.html` — all slides inline; the cheat-sheet comment at the top is the **authoritative authoring spec** (keep it in sync with `theme.css`). **Zero custom JS**: the only script imports vendored reveal + the official notes plugin and calls `Reveal.initialize` once; `window.Reveal` is exposed for probing. The config is load-bearing — see the `center:false` landmine.
 - `theme.css` — the design + the composition system (rationale below). Applies `font-family`/`color` directly to elements — declaring CSS variables alone leaves text at browser-default black Times on dark slides (bitten twice; the pixel probe catches it).
-- `vendor/` — reveal pinned 5.2.1 from jsDelivr: `reveal.esm.js`, `reveal.css`, `plugin/notes/notes.esm.js` — all self-contained. To bump: re-download all three and **re-verify every landmine below against the new source + live probes** (this doc's landmines were re-verified that way once already; don't cargo-cult them either way).
+- `vendor/` — reveal, pinned release, vendored from jsDelivr: `reveal.esm.js`, `reveal.css`, `notes.esm.js` — all self-contained (flat, no plugin subdir; the notes plugin import in `index.html` points at `./vendor/notes.esm.js`). To bump, see **Updating vendored files** below. **Re-verify every landmine below against the new source + live probes** (this doc's landmines were re-verified that way once already; don't cargo-cult them either way).
 - `assets/` — real images; an EMPTY `<figure>` still renders the pure-CSS placeholder until an `<img>` lands inside it.
 
 ## Design rationale (the WHY; the cheat-sheet in index.html is the WHAT)
@@ -28,7 +28,7 @@ Zero-dependency reveal.js 5.2.1 presentation deck. The deck IS the documentation
 - **Native mechanisms only**: fragments, gradients, speaker notes, `?print-pdf` are all reveal/CSS — never custom JS.
 - **Deliberately unsupported** (user decision): charts (build one-offs as inline SVG / styled tables when needed), weighted splits, `.lead`, segbar/compare/imggrid — killed in the 2025 radical-simplification rewrite; git history has them. `.agenda` demos itself on the front-matter slide only (never paired).
 
-## Landmines (verified against 5.2.1 source + live probes)
+## Landmines (verified against the pinned reveal source + live probes)
 
 - **The display landmine**: reveal keeps slides rendered by stamping *inline* `display:block`, which persists past the class flip — that IS the fade mechanism (the outgoing slide stays rendered). Inline style beats any class rule, so the flex scaffold needs `.reveal .slides section { display: flex !important }` — scoped to ALL slides, because visited nested slides can sit with **no state class at all**. Without it, the outgoing slide re-flows to block layout mid-transition (the visible "jump before the transition").
 - **`center: false` in the config** — reveal's default vertical centering stamps an inline `top` on every slide that persists into the PDF and pushes pages half a page down. `center:false` makes reveal write `top:""` instead, so the print refill needs no `top:0!important`.
@@ -42,6 +42,26 @@ Zero-dependency reveal.js 5.2.1 presentation deck. The deck IS the documentation
 - **Bare non-`.col` wrapper `<div>`s still escape slot typography** — the slot rule selects `.body > *` / `.col > *`; `.col` is the only sanctioned wrapper.
 - **Bullets are unbreakable by construction**: `list-style` is dead deck-wide; every marker is an `li::before` flex box exactly the height of the first line box. Depth decides the marker (ul: dot · small disc · small dot; ol: 1. → a. → i., counters reset per list). Traps: `::before` with `content:''` + `width:auto` collapses to 0 wide; text-marker rules must NOT set a smaller font-size (their 1.5em box must match the line box); sized pseudo-elements need `display:block` (inline pseudos ignore width/height — timeline dots vanished once).
 - **Overflow is a silent failure**: fixed 1280×720 canvas, no auto-fit; an overfull slide just clips — split it. Probes catch out-of-canvas overflow, **not intra-slide overlap**. After typography changes, eyeball the densest slides (`out/png/`).
+
+## Updating vendored files (reveal.js ESM + CSS)
+
+All three files come from jsDelivr — flat, self-contained ESM, no nested imports:
+
+```
+# set VER to the pinned reveal.js version, then — note the plugin lives at the
+# package ROOT, not under dist/ (a /dist/plugin/... URL 404s on jsDelivr):
+VER=<pinned-version>
+curl -fsSL -o vendor/reveal.esm.js https://cdn.jsdelivr.net/npm/reveal.js@$VER/dist/reveal.esm.js
+curl -fsSL -o vendor/reveal.css    https://cdn.jsdelivr.net/npm/reveal.js@$VER/dist/reveal.css
+curl -fsSL -o vendor/notes.esm.js  https://cdn.jsdelivr.net/npm/reveal.js@$VER/plugin/notes/notes.esm.js
+```
+
+After downloading:
+
+1. Sanity-check against the CDN: `cmp <(curl -fsSL <url>) vendor/<file>` for each — they must be byte-identical to the pinned release. Don't panic if the `/*! reveal.js … */` banner inside `reveal.esm.js` reads one version behind: upstream's version string can lag; the `cmp` above is the source of truth.
+2. `grep -n "^import\|from "` the JS files — they must stay import-free (or only self-referencing); the deck ships zero deps beyond these files.
+2. Re-verify every **Landmine** against the new source — especially `center:false` inline-top stamping, the print-refill specificity race, and `.pdf-page` height (bitten before; re-probed during the one bump so far).
+3. Live-verify with the probe suite (protocol below): `HOST=0.0.0.0 PORT=8000 bun serve.ts` + `bun tests/probe.mjs`, then eyeball `out/png/`.
 
 ## Probe protocol (headless Chrome via docker)
 
