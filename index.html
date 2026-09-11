@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>deckk</title>
+  <link rel="stylesheet" href="vendor/reveal.css">
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  SLIDE AUTHORING CHEAT SHEET — read this before writing a slide
+  ══════════════════════════════════════════════════════════════════════
+
+  A slide = <section> with, in order: optional kicker, optional h2,
+  ONE optional <div class="body">, optional <footer>.
+  THE TITLE ALWAYS SPANS THE TOP, ABOVE THE PANELS — never inside a panel.
+
+  THE ONE RULE: .body is a grid that counts its own children —
+  1 child → full width, 2 → two halves. A child is either a BARE PANEL
+  (one panel, full width) or <div class="col"> — ONE COLUMN of the
+  layout. Two-sided slides wrap EACH SIDE in a .col; a side that needs
+  more than one panel just lists them inside (gap spaces the stack).
+  Never set widths, margins, font-sizes or inline styles on content.
+
+  PANELS ARE BARE TAGS (no classes): <ul> <ol> <p> <table> <figure> <img>
+  — plus <pre class="code">, the navy code slab (optional <span class="cap">
+  on the first line = muted caption; inline <code> is a quiet chip).
+  Swapping a <ul> for <p>s changes nothing visually — typography lives on
+  the slot (a direct child of .body or .col), not the tag. Nested lists:
+  just nest — depth picks the marker (dot · small disc · small dot; ol: 1. a. i.).
+  An EMPTY <figure> shows a placeholder; drop an <img> inside it when the
+  asset lands (assets/ dir). Images CROP to fill (object-fit: cover) —
+  class="nocrop" on the <img> flips to contain (letterbox, never crop).
+
+  ── Feature blocks (children are bare divs/spans; meaning by position) ──
+
+    .stats > div      → [number div, caption div]           (full or half)
+    .steps > div      → [num div, label div, text div]      (full or half)
+    .timeline > div   → [date div, text div]                (FULL WIDTH only)
+    .agenda > div     → [num span, label span]  (fills body height evenly; top-hugged in a .col)
+
+  ── Slide types ───────────────────────────────────────────────────
+
+    Statement (call to action): <div class="statement">One line.</div>
+      — the <p> right after it is the subtitle, auto-styled.
+    Quote: <div class="quote">…</div> + <p>Attribution</p> (flat siblings;
+      also works as a SLOT PANEL in a pair — size steps down automatically).
+    Dark slides (title / section / thank-you):
+      <section class="dark cover"    data-background-gradient="var(--grad-navy)">
+      <section class="dark divider"  data-background-gradient="var(--grad-navy)">
+      .divider's FIRST child div is the big ghost section number.
+      h1 + p = subtitle; the last <p> on .cover = byline.
+      A dark slide may also carry a .body (the closing thank-you demos it).
+
+  ── Centering ──────────────────────────────────────────────────────
+
+    Panels are TOP-ALIGNED by default. class="center" on .body centers
+    the whole slide's panels; on .col, just that column's stack.
+
+  ── Fragments (appear on click) — native reveal, no wiring ─────────
+
+    Add class="fragment" to any element — <li>, <tr>, <p>, even a .col.
+
+  ── Speaker notes ─────────────────────────────────────────────────
+
+    <aside class="notes">…</aside> anywhere inside a section.
+    Press S while presenting to open the speaker view.
+
+  ── Source footer ─────────────────────────────────────────────────
+
+    <footer>Source: … — <a href="…" target="_blank">https://…</a></footer>
+    — a bare semantic tag, last child of ANY slide; small, gray, pinned
+    to the bottom. Delete it and nothing else changes.
+
+  ── Auto-sizing (do NOT fight it by hand) ─────────────────────────
+
+    • Lists shrink themselves at 6+ / 10+ items (counted per panel).
+    • Stats shrink at 4+; steps divide the row evenly — add children
+      freely. In a HALF both wrap two per row (container-query driven:
+      six stats = a 2×3 block, six steps = a 3×2 block, four = 2×2).
+    • Tables compact in a half; keep ≤4 columns in a half, ≤5 full width.
+    • Code slabs clip, never scroll — keep ≤13 lines full width, ≤9 in a half.
+    • Overflow is a silent failure (fixed 1280×720 canvas): if a slide is
+      overfull it clips — split it.
+
+  XXX future: charts are deliberately unsupported — build each as a
+  one-off (inline SVG or a styled <table>) when actually needed.
+-->
+
+      <!-- Front matter: Cover, then ↓ Agenda.
+           XXX reveal gotcha: a stack parent's OWN content is discarded —
+           stack wrappers must stay EMPTY; slides are nested children. -->
+      <section>
+        <section class="dark cover" data-background-gradient="var(--grad-navy)">
+          <p class="kicker">A Guided Tour</p>
+          <h1>deckk</h1>
+          <p>Every slide type this theme can build &mdash; demonstrated in one deck.</p>
+          <p>Theme Reference &middot; Zero Custom JS</p>
+          <aside class="notes">This deck IS the documentation: four sections, one per capability tier. One minute.</aside>
+        </section>
+
+        <section>
+          <p class="kicker">Agenda</p>
+          <h2>What this deck demonstrates</h2>
+          <div class="body">
+            <div class="agenda">
+              <div><span>01</span><span>Mechanisms &mdash; marker systems, depth, fragments, self-sizing</span></div>
+              <div><span>02</span><span>Full-width &mdash; every block standing alone</span></div>
+              <div><span>03</span><span>Pairs &middot; Reading &mdash; text, numbers, tables</span></div>
+              <div><span>04</span><span>Pairs &middot; Pictures &amp; Code</span></div>
+            </div>
+          </div>
+          <aside class="notes">Four tiers, each one builds on the last. Park questions for the end.</aside>
+        </section>
+      </section>
+
+      <!-- ══ 01 · Mechanisms: the system behaviors. Shown first — they
+           demo as comparisons, so 2-col bodies appear before the
+           full-width geometry lesson in 02. ══ -->
+      <section>
+        <section class="dark divider" data-background-gradient="var(--grad-navy)">
+          <div>01</div>
+          <p class="kicker">Mechanisms</p>
+          <h1>What the system does for you</h1>
+          <p>Marker systems &middot; depth &middot; fragments &middot; self-sizing &mdash; no classes to remember.</p>
+        </section>
+
+        <!-- list types — ul | ol side by side -->
+        <section>
+          <p class="kicker">Mechanisms &middot; List Types</p>
+          <h2>Two marker systems, side by side</h2>
+          <div class="body">
+            <div class="col">
+              <ul>
+                <li>What we know &mdash; one line</li>
+                <li>What we assume &mdash; flag it</li>
+                <li>What we must learn</li>
+                <li>Who decides</li>
+              </ul>
+            </div>
+            <div class="col">
+              <ol>
+                <li>Frame the question</li>
+                <li>Baseline the numbers</li>
+                <li>Run the pilot</li>
+                <li>Scale on the evidence</li>
+              </ol>
+            </div>
+          </div>
+        </section>
+
+        <!-- bullet list; items appear on click -->
+        <section>
+          <p class="kicker">Mechanisms &middot; Appear on Click</p>
+          <h2>Fragments appear one by one</h2>
+          <div class="body">
+            <ul>
+              <li class="fragment">Fragments are native reveal &mdash; no wiring</li>
+              <li class="fragment">Markers are ::before flex boxes, depth-aware</li>
+              <li class="fragment">list-style is dead deck-wide; depth decides the marker</li>
+              <li class="fragment">Six or more items shrink the type automatically</li>
+              <li class="fragment">Swap this list for a paragraph &mdash; a visual no-op</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- stacked nested lists: one .col, full width. Depth picks the
+             marker: ul → dot / dash / small dot; ol → 1. / a. / i. -->
+        <section>
+          <p class="kicker">Mechanisms &middot; Depth</p>
+          <h2>Depth picks the marker &mdash; just nest</h2>
+          <div class="body">
+            <div class="col">
+              <ul>
+                <li>Theme one &mdash; the headline claim
+                  <ul>
+                    <li>Sub-point &mdash; evidence for it
+                      <ul>
+                        <li>Detail &mdash; the finest grain</li>
+                        <li>Detail &mdash; a few words</li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+                <li>Theme two &mdash; one line, no children</li>
+              </ul>
+              <ol>
+                <li>Phase one &mdash; ordered at the top level
+                  <ul>
+                    <li>Sub-point &mdash; bullets under numbers</li>
+                  </ul>
+                </li>
+                <li>Phase two &mdash; the counter restarts per list
+                  <ol>
+                    <li>Lettered sub-point
+                      <ol><li>Roman detail</li></ol>
+                    </li>
+                  </ol>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </section>
+
+        <!-- self-sizing — 4 vs 12 items, same slot: the ladder in action -->
+        <section>
+          <p class="kicker">Mechanisms &middot; Self-Sizing</p>
+          <h2>The type steps down by itself</h2>
+          <div class="body">
+            <div class="col">
+              <ul>
+                <li>Four items &mdash; the default size</li>
+                <li>No classes &mdash; the count decides</li>
+                <li>Steps at six, again at ten</li>
+                <li>Same rule powers stats and agenda</li>
+              </ul>
+            </div>
+            <div class="col">
+              <ul>
+                <li>Placeholder item one &mdash; one line each</li>
+                <li>Placeholder item two &mdash; density is automatic</li>
+                <li>Placeholder item three &mdash; six items: step one</li>
+                <li>Placeholder item four &mdash; ten items: step two</li>
+                <li>Placeholder item five</li>
+                <li>Placeholder item six</li>
+                <li>Placeholder item seven</li>
+                <li>Placeholder item eight</li>
+                <li>Placeholder item nine</li>
+                <li>Placeholder item ten</li>
+                <li>Placeholder item eleven</li>
+                <li>Placeholder item twelve</li>
+              </ul>
+            </div>
+          </div>
+          <aside class="notes">Same slot, 4 vs 12 items: 0.75em down to 0.55em. The ladder also drives stats at 4+, agenda at 6+, and table compaction in halves.</aside>
+        </section>
+      </section>
+
+      <!-- ══ 02 · Full-Width: every block standing alone — bare panels,
+           the no-body slide types (quote, statement), feature blocks. ══ -->
+      <section>
+        <section class="dark divider" data-background-gradient="var(--grad-navy)">
+          <div>02</div>
+          <p class="kicker">Full-Width</p>
+          <h1>Every block, standing alone</h1>
+          <p>One panel per body &mdash; paragraphs, tables, images, slide types, feature blocks.</p>
+        </section>
+
+        <!-- paragraph alone: ONE child → full width; swap the tag, nothing moves -->
+        <section>
+          <p class="kicker">Full-Width &middot; Bare Panel</p>
+          <h2>Two paragraphs share one column</h2>
+          <div class="body">
+            <div class="col">
+              <p>A bare panel fills the body edge to edge. Swap it for a list or a table and nothing moves &mdash; typography is keyed to the slot, not the tag. The grid counts its children: one means full width.</p>
+              <p>Two paragraphs stack in the same full-width slot inside a lone <code>.col</code> &mdash; the only sanctioned wrapper. Each one is gap-spaced above the next, margins zeroed, geometry still unstated in the markup.</p>
+            </div>
+          </div>
+          <footer>Source: deckk capability showcase &mdash; <a href="https://revealjs.com/" target="_blank">revealjs.com</a></footer>
+        </section>
+
+        <!-- table alone; appears whole (no fragment rows) -->
+        <section>
+          <p class="kicker">Full-Width &middot; Table</p>
+          <h2>A small table beats a dense paragraph</h2>
+          <div class="body">
+            <table>
+              <thead><tr><th>Placeholder</th><th>Metric</th><th>Now</th><th>Target</th><th>Risk</th></tr></thead>
+              <tbody>
+                <tr><td>Row one</td><td>Placeholder</td><td>12</td><td>20</td><td>Low</td></tr>
+                <tr><td>Row two</td><td>Placeholder</td><td>48</td><td>65</td><td>Low</td></tr>
+                <tr><td>Row three</td><td>Placeholder</td><td>7</td><td>9</td><td>Medium</td></tr>
+                <tr><td>Row four</td><td>Placeholder</td><td>33</td><td>40</td><td>Low</td></tr>
+                <tr><td>Row five</td><td>Placeholder</td><td>21</td><td>30</td><td>High</td></tr>
+                <tr><td>Row six</td><td>Placeholder</td><td>88</td><td>95</td><td>Low</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <footer>Source: deckk capability showcase &mdash; <a href="https://example.com/market-review-2026" target="_blank">example.com/market-review-2026</a></footer>
+        </section>
+
+        <!-- empty figure full width = pure-CSS placeholder -->
+        <section>
+          <p class="kicker">Full-Width &middot; Image</p>
+          <h2>An empty figure is a placeholder, not a hole</h2>
+          <div class="body">
+            <figure></figure>
+          </div>
+        </section>
+
+        <!-- real asset: tall image in near-square boxes — contain | crop -->
+        <section>
+          <p class="kicker">Full-Width &middot; Real Asset &middot; Tall</p>
+          <h2>Wrong shape, two answers: contain vs crop</h2>
+          <div class="body">
+            <div class="col">
+              <figure><img class="nocrop" src="assets/tall.jpg" alt="Tall mountain photograph, contain fit"></figure>
+            </div>
+            <div class="col">
+              <figure><img src="assets/tall.jpg" alt="Tall mountain photograph, crop fit"></figure>
+            </div>
+          </div>
+          <footer>Photo: picsum.photos (Lorem Picsum), deliberately 700&times;2000</footer>
+        </section>
+
+        <!-- real asset: wide image, full-width banner via crop -->
+        <section>
+          <p class="kicker">Full-Width &middot; Real Asset &middot; Wide</p>
+          <h2>A wide image becomes a banner when it crops</h2>
+          <div class="body">
+            <figure><img src="assets/wide.jpg" alt="Wide river photograph, crop fit"></figure>
+          </div>
+          <footer>Photo: picsum.photos (Lorem Picsum), deliberately 2400&times;600</footer>
+        </section>
+
+        <!-- quote — the deck's single serif moment; footer pins absolutely -->
+        <section>
+          <p class="kicker">Full-Width &middot; Quote</p>
+          <div class="quote">Fragments, gradients and speaker notes were native reveal mechanisms all along &mdash; this deck ships zero custom JavaScript.</div>
+          <p>The Deck Itself &middot; On Its Own Footer</p>
+          <footer>Source: deckk capability showcase &mdash; <a href="https://revealjs.com/" target="_blank">revealjs.com</a></footer>
+        </section>
+
+        <!-- statement — one big line, subtitle auto-styled -->
+        <section>
+          <p class="kicker">Full-Width &middot; Statement</p>
+          <div class="statement">One big line is a whole slide.</div>
+          <p>The paragraph after a statement is its subtitle &mdash; styled automatically, no wrapper.</p>
+          <aside class="notes">Statement and quote have no .body; the section centers them itself.</aside>
+        </section>
+
+        <!-- stats alone — the opt-in .center: a sparse slide that wants
+             its numbers vertically centered -->
+        <section>
+          <p class="kicker">Full-Width &middot; Stats</p>
+          <h2>Three numbers, vertically centered</h2>
+          <div class="body center">
+            <div class="stats">
+              <div><div>250k</div><div>what this volume means</div></div>
+              <div><div>100M</div><div>addressable market context</div></div>
+              <div><div>3.2x</div><div>expected improvement</div></div>
+            </div>
+          </div>
+          <footer>Source: deckk capability showcase &mdash; <a href="https://example.com/survey-2025" target="_blank">example.com/survey-2025</a></footer>
+        </section>
+
+        <!-- steps alone -->
+        <section>
+          <p class="kicker">Full-Width &middot; Steps</p>
+          <h2>A four-step path, one row</h2>
+          <div class="body">
+            <div class="steps">
+              <div><div>1</div><div>Frame</div><div>Align on the question.</div></div>
+              <div><div>2</div><div>Baseline</div><div>Measure where we are.</div></div>
+              <div><div>3</div><div>Pilot</div><div>Prove it in a contained scope.</div></div>
+              <div><div>4</div><div>Scale</div><div>Expand on the evidence.</div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- timeline alone (full width only); .alt = accent dot -->
+        <section>
+          <p class="kicker">Full-Width &middot; Timeline</p>
+          <h2>Four milestones on one line</h2>
+          <div class="body center">
+            <div class="timeline">
+              <div><div>Q1</div><div>Milestone one</div></div>
+              <div class="fragment"><div>Q2</div><div>Milestone two</div></div>
+              <div class="fragment"><div>Q3</div><div>Milestone three</div></div>
+              <div class="fragment alt"><div>Q4</div><div>Stretch goal</div></div>
+            </div>
+          </div>
+          <aside class="notes">Timeline is full-width only by spec — it never sits in a half.</aside>
+        </section>
+
+        <!-- code — full-width navy slab; caption is the .cap span -->
+        <section>
+          <p class="kicker">Full-Width &middot; Code</p>
+          <h2>The navy slab is a slot panel, like any other</h2>
+          <div class="body">
+            <pre class="code"><span class="cap">// one child → full width; a half shrinks the type by container query</span>
+function deckk(slide) {
+  // zero custom JS — fragments and placeholders are native reveal
+  const body = slide.querySelector('.body');
+  return [...body.children].map(panel =&gt; panel.tagName);
+}
+</pre>
+          </div>
+          <footer>Inline <code>&lt;code&gt;</code> is a quiet chip &mdash; panels are <code>&lt;pre class="code"&gt;</code></footer>
+        </section>
+      </section>
+
+      <!-- ══ 03 · Pairs — reading: text, numbers, tables combined.
+           Two-sided slides: EACH SIDE is a .col, even when it holds
+           a single panel. In a half, stats/steps wrap two per row. ══ -->
+      <section>
+        <section class="dark divider" data-background-gradient="var(--grad-navy)">
+          <div>03</div>
+          <p class="kicker">Pairs &mdash; Reading</p>
+          <h1>The reading pairs</h1>
+          <p>Numbers, tables, sequences &mdash; one of each that earns its place.</p>
+        </section>
+
+        <!-- image | list (2 depth) -->
+        <section>
+          <p class="kicker">Pairs &middot; Image + List</p>
+          <h2>Picture left, two-level reading right</h2>
+          <div class="body">
+            <div class="col">
+              <figure></figure>
+            </div>
+            <div class="col">
+              <ul>
+                <li>Theme one &mdash; the headline claim
+                  <ul>
+                    <li>Sub-point &mdash; evidence for it</li>
+                    <li>Sub-point &mdash; a second strand</li>
+                  </ul>
+                </li>
+                <li>Theme two &mdash; one line, no children</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6 KPIs | 2 paragraphs -->
+        <section>
+          <p class="kicker">Pairs &middot; KPIs + Paragraphs</p>
+          <h2>Six numbers left, the reading right</h2>
+          <div class="body">
+            <div class="col">
+              <div class="stats">
+                <div><div>250k</div><div>volume</div></div>
+                <div><div>100M</div><div>reach</div></div>
+                <div><div>3.2x</div><div>efficiency</div></div>
+                <div><div>12%</div><div>uplift</div></div>
+                <div><div>4x</div><div>speed</div></div>
+                <div><div>88</div><div>satisfaction</div></div>
+              </div>
+            </div>
+            <div class="col">
+              <p>First paragraph carries the headline reading &mdash; what the numbers say, in one breath.</p>
+              <p>Second paragraph adds the nuance: two panels in one column, spaced by the column's gap.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- table (~8 lines) | 4 KPIs -->
+        <section>
+          <p class="kicker">Pairs &middot; Table + KPIs</p>
+          <h2>Detail left, the four numbers that matter right</h2>
+          <div class="body">
+            <div class="col">
+              <table>
+                <thead><tr><th>Phase</th><th>Now</th><th>Target</th><th>Risk</th></tr></thead>
+                <tbody>
+                  <tr><td>Frame</td><td>12</td><td>20</td><td>Low</td></tr>
+                  <tr><td>Baseline</td><td>48</td><td>65</td><td>Low</td></tr>
+                  <tr><td>Pilot A</td><td>7</td><td>9</td><td>Medium</td></tr>
+                  <tr><td>Pilot B</td><td>11</td><td>14</td><td>Medium</td></tr>
+                  <tr><td>Harden</td><td>33</td><td>40</td><td>Low</td></tr>
+                  <tr><td>Train</td><td>21</td><td>30</td><td>Low</td></tr>
+                  <tr><td>Rollout</td><td>88</td><td>95</td><td>High</td></tr>
+                  <tr><td>Review</td><td>95</td><td>98</td><td>Low</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="col">
+              <div class="stats">
+                <div><div>12%</div><div>uplift</div></div>
+                <div><div>4x</div><div>speed-up</div></div>
+                <div><div>250k</div><div>volume</div></div>
+                <div><div>3.2x</div><div>efficiency</div></div>
+              </div>
+            </div>
+          </div>
+          <footer>Source: deckk capability showcase &mdash; <a href="https://example.com/market-review-2026" target="_blank">example.com/market-review-2026</a></footer>
+        </section>
+
+        <!-- sequence | paragraph + small list -->
+        <section>
+          <p class="kicker">Pairs &middot; Sequence + Reading</p>
+          <h2>Sequence left, framing and detail right</h2>
+          <div class="body">
+            <div class="col">
+              <ol>
+                <li>Frame the question</li>
+                <li>Baseline the numbers</li>
+                <li>Run the pilot</li>
+                <li>Harden what worked</li>
+                <li>Scale on the evidence</li>
+              </ol>
+            </div>
+            <div class="col">
+              <p>The right column stacks a framing paragraph over its supporting list &mdash; the column's gap does the spacing.</p>
+              <ul>
+                <li>Short point &mdash; one line</li>
+                <li>Short point &mdash; keep it tight</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- plan (6 steps) | 3 paragraphs, one per click -->
+        <section>
+          <p class="kicker">Pairs &middot; Plan + Reading</p>
+          <h2>Six steps left, the reading appears on click</h2>
+          <div class="body">
+            <div class="col">
+              <div class="steps">
+                <div><div>1</div><div>Frame</div><div>Align on the question.</div></div>
+                <div><div>2</div><div>Baseline</div><div>Measure where we are.</div></div>
+                <div><div>3</div><div>Pilot</div><div>Prove it in a contained scope.</div></div>
+                <div><div>4</div><div>Harden</div><div>Fix what the pilot broke.</div></div>
+                <div><div>5</div><div>Train</div><div>Bring the team along.</div></div>
+                <div><div>6</div><div>Scale</div><div>Expand on the evidence.</div></div>
+              </div>
+            </div>
+            <div class="col">
+              <p class="fragment">Paragraph one: where the plan starts and why it starts there.</p>
+              <p class="fragment">Paragraph two: what the middle of the plan proves, and to whom.</p>
+              <p class="fragment">Paragraph three: what scale costs, and what gates it.</p>
+            </div>
+          </div>
+          <aside class="notes">Fragments work on any element — here, one paragraph per click.</aside>
+        </section>
+      </section>
+
+      <!-- ══ 04 · Pairs — pictures & code: the visual half of the pairs ══ -->
+      <section>
+        <section class="dark divider" data-background-gradient="var(--grad-navy)">
+          <div>04</div>
+          <p class="kicker">Pairs &mdash; Pictures &amp; Code</p>
+          <h1>Evidence and pictures</h1>
+          <p>table + image &middot; quote + image &middot; code + code &middot; image + centered reading.</p>
+        </section>
+
+        <!-- table (~10 lines) | image -->
+        <section>
+          <p class="kicker">Pairs &middot; Table + Image</p>
+          <h2>Evidence left, picture right</h2>
+          <div class="body">
+            <div class="col">
+              <table>
+                <thead><tr><th>Phase</th><th>Now</th><th>Target</th><th>Risk</th></tr></thead>
+                <tbody>
+                  <tr><td>Frame</td><td>12</td><td>20</td><td>Low</td></tr>
+                  <tr><td>Baseline</td><td>48</td><td>65</td><td>Low</td></tr>
+                  <tr><td>Pilot A</td><td>7</td><td>9</td><td>Medium</td></tr>
+                  <tr><td>Pilot B</td><td>11</td><td>14</td><td>Medium</td></tr>
+                  <tr><td>Harden</td><td>33</td><td>40</td><td>Low</td></tr>
+                  <tr><td>Train</td><td>21</td><td>30</td><td>Low</td></tr>
+                  <tr><td>Staff</td><td>15</td><td>18</td><td>Low</td></tr>
+                  <tr><td>Rollout</td><td>88</td><td>95</td><td>High</td></tr>
+                  <tr><td>Review</td><td>95</td><td>98</td><td>Low</td></tr>
+                  <tr><td>Handover</td><td>99</td><td>100</td><td>Low</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="col">
+              <figure></figure>
+            </div>
+          </div>
+        </section>
+
+        <!-- quote | image — the quote is a slot panel too -->
+        <section>
+          <p class="kicker">Pairs &middot; Quote + Image</p>
+          <h2>The quote is just a panel &mdash; here beside a picture</h2>
+          <div class="body">
+            <div class="col">
+              <div class="quote">Any sufficiently advanced slide deck is indistinguishable from its own documentation.</div>
+              <p>The attribution follows as a sibling &mdash; same rule as the full-width quote.</p>
+            </div>
+            <div class="col">
+              <figure></figure>
+            </div>
+          </div>
+        </section>
+
+        <!-- code | code -->
+        <section>
+          <p class="kicker">Pairs &middot; Code + Code</p>
+          <h2>Two slabs, two halves &mdash; same panel, narrower</h2>
+          <div class="body">
+            <div class="col">
+              <pre class="code"><span class="cap">// before — the naive walk</span>
+let total = 0;
+for (const item of cart) {
+  total += item.price * item.qty;
+}
+</pre>
+            </div>
+            <div class="col">
+              <pre class="code"><span class="cap"># after — the one-liner (python)</span>
+def total(cart):
+    return sum(
+        i.price * i.qty for i in cart
+    )
+</pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- image | vertical-centered 2 paragraphs -->
+        <section>
+          <p class="kicker">Pairs &middot; Image + Centered Reading</p>
+          <h2>Picture left, centered reading right</h2>
+          <div class="body">
+            <div class="col">
+              <figure></figure>
+            </div>
+            <div class="col center">
+              <p>The right column opts into vertical centering with .col.center &mdash; its two paragraphs ride as one centered group.</p>
+              <p>Drop an &lt;img&gt; inside the empty figure when the asset lands; the placeholder vanishes by itself.</p>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- Thank you — classic closer, with the 2-col dark variant nested
+           UNDER it (a vertical slide: down from the plain thank-you) -->
+      <section>
+        <section class="dark cover" data-background-gradient="var(--grad-navy)">
+          <h1>Thank You</h1>
+          <p>Questions?</p>
+          <aside class="notes">Every slide type demonstrated. Silence is fine here too.</aside>
+        </section>
+
+        <!-- thank you + image — dark slide WITH a .body, two halves -->
+        <section class="dark" data-background-gradient="var(--grad-navy)">
+          <p class="kicker">Thank You</p>
+          <h2>Questions &mdash; and the deck behind them</h2>
+          <div class="body">
+            <div class="col">
+              <p>Even the closer is ordinary markup: a dark slide carrying a <code>.body</code>, two halves, one placeholder &mdash; no cover magic, no new rules.</p>
+              <p>Swap the figure for a real image when the asset lands; the placeholder vanishes by itself.</p>
+            </div>
+            <div class="col">
+              <figure></figure>
+            </div>
+          </div>
+        </section>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- The ONLY script in the deck: stock reveal + the official notes plugin.
+       No custom JS — fragments, gradients and placeholders are all native
+       markup/CSS mechanisms now. -->
+  <script type="module">
+    import Reveal from './vendor/reveal.esm.js';
+    import RevealNotes from './vendor/plugin/notes/notes.esm.js';
+
+    Reveal.initialize({
+      hash: true,                   // URL-driven navigation: #/<section>/<slide>
+      transition: 'fade',
+      margin: 0,                    // the slide pads itself (theme.css) — full-bleed
+      center: false,                // sections fill the canvas; and reveal's
+                                    // default centering stamps an inline `top`
+                                    // on every slide that persists into the PDF
+                                    // and pushes pages half a page down.
+      pdfSeparateFragments: false,  // emailed PDFs: one page per slide, not per click
+      width: 1280, height: 720,     // 16:9 — also drives PDF page size
+      plugins: [RevealNotes],       // S key → speaker notes view
+    });
+
+    window.Reveal = Reveal;         // exposed for headless probing / console tinkering
+  </script>
+</body>
+</html>

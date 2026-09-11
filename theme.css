@@ -1,0 +1,593 @@
+/* ══════════════════════════════════════════════════════════════════
+   deckk theme — reveal.js 5, zero deps, ZERO custom JS.
+
+   PHILOSOPHY — the five principles that generate every rule in this
+   file (the rules themselves live in the authoring spec, below):
+
+   • Markup never states geometry — the STRUCTURE of the markup (the
+     count of children) IS the layout.
+   • Classes mean INTENT, never layout — center / nocrop / cap say
+     what you want, never where pixels go.
+   • The SLOT decides typography, not the tag — swap a <ul> for <p>s,
+     nothing moves.
+   • Self-sizing is the norm — content shrinks itself; never reach
+     for a font-size by hand.
+   • Native mechanisms only — reveal fragments/gradients/notes plus
+     plain CSS. If a feature needs JS, it is the wrong feature.
+
+   The AUTHORING SPEC (how to write a slide) is the cheat-sheet comment
+   at the top of index.html — keep this file and that spec in sync.
+   Architecture rationale + verified landmines: AGENTS.md.
+   ══════════════════════════════════════════════════════════════════ */
+
+:root {
+  --navy: #16294f;        /* signature color */
+  --navy-mid: #2b4a8b;    /* secondary blue */
+  --navy-soft: #6b7a99;   /* muted labels */
+  --ink: #1a1a1a;         /* body text on white */
+  --ink-soft: #555b66;
+  --hairline: rgba(22, 41, 79, 0.25);
+  --hairline-dark: rgba(255, 255, 255, 0.35);
+
+  /* geometry: reveal runs at margin:0; the slide pads itself, so
+     backgrounds are full-bleed with zero extra work. */
+  --pad-x: 72px;
+  --pad-y: 52px;
+  --gap: 2em;             /* gutter between body panels */
+
+  --grad-navy: linear-gradient(135deg, #101f3e 0%, #16294f 45%, #24427b 100%);
+
+  --serif: system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;  /* display font */
+  --sans: Arial, Helvetica, sans-serif;
+  --quote-serif: Georgia, 'Times New Roman', serif;  /* the deck's single human voice */
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;  /* the code voice */
+
+  /* code: navy panel on light slides, near-black on dark; chip shares the panel tint */
+  --code-bg: #f2f4f9;
+  --code-bg-dark: #101a33;
+  --code-chip: rgba(22, 41, 79, 0.08);
+}
+
+.reveal {
+  --r-background-color: #ffffff;
+  --r-main-font: var(--sans);
+  --r-heading-font: var(--serif);
+  --r-main-color: var(--ink);
+  --r-heading-color: var(--navy);
+  --r-link-color: var(--navy-mid);
+
+  font-size: 32px;
+  font-family: var(--sans);
+  color: var(--ink);
+  text-align: left;
+}
+
+/* Dark slides (cover / divider / closing): class="dark" plus the native
+   data-background-gradient attribute (no JS — reveal paints it on the
+   slide's background layer, including print). */
+.reveal .dark {
+  --r-heading-color: #ffffff;
+  --r-main-color: #dfe4ee;
+  --hairline: var(--hairline-dark);
+  /* panel ink flips too — slot typography hard-codes var(--ink), so a
+     dark slide carrying a .body (thank-you+image) needs these remapped */
+  --ink: #dfe4ee;
+  --ink-soft: #8a97b5;
+}
+
+/* URLs in source footers are real links (target="_blank") — styled to stay
+   subtle: inherit the footnote gray, hairline underline. */
+.reveal .slides footer a { color: inherit; text-decoration: underline; text-decoration-color: var(--hairline); text-underline-offset: 0.15em; }
+.reveal .slides footer a:hover { color: var(--navy-mid); }
+
+/* ── Slide scaffolding ─────────────────────────────────────────── */
+
+/* Every slide: self-padding, flex column (head → body → source). */
+.reveal section {
+  text-align: left;
+  padding: var(--pad-y) var(--pad-x);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.reveal .slides > section,
+.reveal .slides > section > section { height: 100%; }
+
+/* THE display landmine (verified against reveal 5.2.1 source + live probe):
+   reveal keeps slides rendered by stamping inline display:block — and it
+   persists past the class flip, which is exactly how the outgoing slide
+   stays visible during the fade. Inline style beats any class rule, so the
+   flex scaffold needs !important or the outgoing slide re-flows to block
+   layout mid-transition (the visible "jump before the transition").
+   Scoped to ALL slides: visited nested slides can sit with NO state class
+   at all (probe-confirmed), so :is(.present,…) scoping is not enough.
+   Cost: slides reveal "unloads" via inline display:none stay rendered at
+   opacity 0 — harmless at deck sizes. */
+.reveal .slides section { display: flex !important; }
+
+/* Stack sections are the position:absolute containing blocks for their
+   nested slides — keep them padding-free (vendor zeroes only their
+   vertical padding; box-sizing:border-box already neutralizes the rest,
+   this is cheap insurance). */
+.reveal .stack { padding: 0; }
+
+/* Dark layout variants */
+.reveal .cover    { justify-content: center; text-align: center; align-items: center; }
+.reveal .divider  { justify-content: center; }
+
+/* Kicker: small-caps eyebrow above the title */
+.reveal .kicker {
+  font-family: var(--sans);
+  font-size: 0.42em;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--navy-mid);
+  margin: 0 0 0.4em;
+}
+.reveal .dark .kicker { color: #aab8d4; }
+
+/* Action titles: display font, hairline rule beneath */
+.reveal h1, .reveal h2 {
+  font-family: var(--serif);
+  font-weight: 700;
+  color: var(--r-heading-color);
+  line-height: 1.15;
+  margin: 0 0 0.25em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--hairline);
+  text-wrap: balance;
+}
+.reveal h1 { font-size: 2.1em; }
+.reveal h2 { font-size: 1.15em; }
+
+.reveal p { margin: 0.4em 0; line-height: 1.45; }
+.reveal strong { color: var(--navy); }
+
+/* Source footer — a BARE <footer> tag (semantically: metadata for its
+   section), placeable on ANY slide as a standalone one-liner: delete it,
+   nothing else changes. On slides with a .body the flex filler pushes it
+   to the bottom; on slides without one (statement, quote) it is pinned
+   absolutely so vertical centering is untouched. */
+.reveal .slides footer {
+  font-size: 0.44em;
+  color: var(--ink-soft);
+  line-height: 1.45;
+  margin: 0.8em 0 0;
+}
+.reveal section:not(:has(> .body)) > footer {
+  position: absolute;
+  bottom: var(--pad-y);
+  left: var(--pad-x);
+  right: var(--pad-x);
+  margin: 0;
+}
+.reveal .dark footer { color: #8a97b5; }
+
+/* ── THE BODY: a grid that counts its own children ─────────────── */
+
+.reveal .body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gap);
+  align-content: start;        /* panels hug the top, right under the title */
+  flex: 1;                      /* fills the slide under head/source */
+  min-height: 0;
+  margin-top: 0.9em;
+  width: 100%;
+}
+.reveal .body:has(> :nth-child(2)) { grid-template-columns: repeat(2, 1fr); }
+
+/* Every body child: a size container (powers cqw compaction). A .col
+   passes the job on to its panels via container queries — one container
+   per layout column, which is exactly what tables/stats should size to. */
+.reveal .body > * { min-width: 0; min-height: 0; container-type: inline-size; }
+
+/* .col = ONE COLUMN of the layout — the only sanctioned wrapper.
+   A side stacks panels by just listing them inside; gap spaces the
+   stack (grid items never collapse margins, so margins are zeroed to
+   keep the rhythm uniform). A lone .col is just a full-width column. */
+.reveal .body > .col {
+  display: grid;
+  gap: 0.8em;
+  align-content: start;
+}
+.reveal .body > .col > * { margin: 0; min-width: 0; }
+
+/* Text panels are BLOCK — li margins must collapse (grid items never do,
+   which doubled list spacing once). Feature blocks (.stats .steps …) set
+   their own display:flex later in the file and win the cascade. */
+.reveal :is(.body, .col) > :where(ul, ol, p) { display: block; }
+.reveal :is(.body, .col) > :where(div) { display: grid; align-content: start; }
+/* Feature blocks + tables: intrinsic height, seated at the top of their row */
+.reveal .body > :where(.steps, .timeline, .stats, table) { align-self: start; }
+
+/* Opt-in vertical centering. "center" on .body centers the whole slide's
+   panels; on .col, just that one column's stack. */
+.reveal .body.center { align-content: safe center; }
+.reveal .body.center > :where(ul, ol, p, div) { align-content: center; }
+.reveal .body > .col.center,
+.reveal .body.center > .col { align-content: safe center; }
+.reveal .body.center > :where(.steps, .timeline, .stats, table) { align-self: center; }
+
+/* Tables center in their slot (auto margins are moot at width:100%, but
+   the rule also zeroes the global table margin-top inside the slot). */
+.reveal :is(.body, .col) > table { margin: 0 auto; width: 100%; }
+
+/* A lone figure fills its column's height — full-bleed placeholder or
+   image. Percentage rows need definite heights down the chain: the body
+   stretches its row first, then the column can hand the height to the
+   figure. The neighboring col gets the taller row too and its centered
+   stack rides over the full height. */
+.reveal .body:has(> figure:only-child),
+.reveal .body:has(> .col > figure:only-child),
+.reveal .body > .col:has(> figure:only-child) { grid-template-rows: 100%; }
+
+/* ── Panel typography: keyed to the SLOT, not the tag ────────────
+   ul↔p swaps are visually a no-op. :where() keeps specificity at 0
+   so stray classes on content tags cannot override the system. */
+
+.reveal :is(.body, .col) > :where(p, ul, ol) {
+  font-size: 0.75em;          /* THE body size — one for all panels */
+  line-height: 1.5;
+  color: var(--ink);
+  margin: 0;
+}
+/* No sibling margin-top rule: .body has 1–2 panels, always side by side
+   (a stacked second panel would sag below the first — the #/1/1 bug). */
+
+/* Lists self-shrink as items pile up (the "lots of items = smaller font" rule) */
+.reveal :is(.body, .col) > :where(ul, ol):has(> li:nth-child(n+6))  { font-size: 0.64em; }
+.reveal :is(.body, .col) > :where(ul, ol):has(> li:nth-child(n+10)) { font-size: 0.55em; }
+/* dense lists also breathe less vertically — 12+ items must clear the source line */
+.reveal :is(.body, .col) > :where(ul, ol):has(> li:nth-child(n+6)) > li  { margin: 0.35em 0; }
+.reveal :is(.body, .col) > :where(ul, ol):has(> li:nth-child(n+10)) > li { margin: 0.25em 0; }
+/* first li's top margin escapes through the block panel (collapses through
+   the ul edge) — zero it so a list's first line sits at slot top like a p */
+.reveal :is(.body, .col) > :where(ul, ol) > li:first-child { margin-top: 0; }
+
+/* ── Bullets: unbreakable by construction, DEPTH-AWARE ──────────
+   list-style is dead deck-wide; every marker is a positioned ::before
+   living inside the li's own padding — nothing markup-side can move it.
+   Depth decides the marker: dot · small disc · small dot; ol: 1. → a. → i.
+   (each ol resets its own counter — numbering restarts per list). */
+.reveal ul, .reveal ol { margin: 0.5em 0 0 0; padding: 0; list-style: none; }
+.reveal li { position: relative; padding-left: 1.2em; margin: 0.5em 0; }
+.reveal li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1.2em;         /* = the li's padding-left */
+  height: 1.5em;        /* = the li's line-height: the marker box IS the first line box */
+  display: flex;
+  align-items: center;  /* marker centers on that line — at any font size, any depth */
+  /* the dot is a 6px circle painted dead-center of that box */
+  background: radial-gradient(circle 3px, var(--navy-mid) 99%, transparent 100%) no-repeat;
+}
+.reveal ol { counter-reset: item; }
+.reveal ol > li { counter-increment: item; }
+.reveal ol > li::before {
+  content: counter(item);
+  width: auto;
+  background: none;
+  color: var(--navy-mid);
+  font-weight: 700;
+}
+/* depth 2: smaller disc (ul) / letter (ol); counters nest automatically.
+   Text markers inherit the li's font-size — their 1.5em box stays the line box,
+   so flex-centering aligns them exactly like the dots. */
+.reveal li ol > li::before {
+  content: counter(item, lower-alpha);
+  background: none;
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+.reveal li ul > li::before {
+  background: radial-gradient(circle 2.5px, var(--navy-mid) 99%, transparent 100%) no-repeat;
+}
+/* depth 3: small dot (ul) / roman (ol) — content resets to empty (dot only);
+   the ul dot KEEPS the 1.2em box (auto width would collapse it to nothing) */
+.reveal li li ul > li::before {
+  content: '';
+  background: radial-gradient(circle 2px, var(--ink-soft) 99%, transparent 100%) no-repeat;
+}
+/* roman numerals run wide — give depth-3 ol room so 'iii' never collides */
+.reveal li li ol > li { padding-left: 1.6em; }
+.reveal li li ol > li::before {
+  content: counter(item, lower-roman);
+  width: auto;
+  background: none;
+}
+.reveal .dark li::before { background: radial-gradient(circle 3px, #aab8d4 99%, transparent 100%) no-repeat; }
+.reveal .dark li ul > li::before { background: radial-gradient(circle 2.5px, #aab8d4 99%, transparent 100%) no-repeat; }
+
+/* nested lists hang tight under their parent item, slightly smaller */
+.reveal li ul, .reveal li ol { margin: 0.25em 0 0 0; }
+.reveal li li { margin: 0.3em 0; font-size: 0.92em; }
+
+/* ── Images: bare tags, zero classes ───────────────────────────── */
+
+.reveal .body figure { margin: 0; display: flex; flex-direction: column; }
+.reveal .body figure img,
+.reveal .body > img {
+  flex: 1 1 auto;
+  min-height: 340px;          /* floor so a lone image never collapses */
+  width: 100%;
+  object-fit: cover;          /* DEFAULT: fill + crop the overflow axis.
+                                 class="nocrop" flips to contain */
+  border: 1px solid var(--hairline);
+  box-sizing: border-box;
+}
+.reveal .body figure figcaption {
+  font-size: 0.44em;
+  color: var(--ink-soft);
+  margin-top: 0.5em;
+}
+
+/* crop is the DEFAULT (above). nocrop = the opt-out for images that
+   must show whole — evidence, charts, anything where cropping lies.
+   Later source order beats the default rule. */
+.reveal .body img.nocrop,
+.reveal .body .col img.nocrop { object-fit: contain; }
+
+/* An EMPTY figure is the placeholder — pure CSS, no class, no JS.
+   Drop an <img> inside the same <figure> and the placeholder vanishes. */
+.reveal .body figure:not(:has(img)) {
+  flex: 1;
+  min-height: 340px;
+  border: 1px solid var(--hairline);
+  background: linear-gradient(135deg, #f2f4f9 0%, #dfe4ee 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--navy-soft);
+  font-size: 0.44em;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.reveal .body figure:not(:has(img))::after { content: 'image placeholder'; }
+
+/* ── Code: the third voice ────────────────────────────────────────
+   Inline <code> is a quiet chip — no border, tint matches the panel.
+   <pre class="code"> is a PANEL (slot child like <p>/<ul>): navy slab,
+   mono, no syntax coloring (readable code needs no confetti at deck
+   size). Caption = the first line wrapped in <span class="cap"> — the
+   one sanctioned inline class (same spirit as .alt on timeline). */
+.reveal code {
+  font-family: var(--mono);
+  font-size: 0.85em;            /* mono runs wide — compensate against its parent */
+  background: var(--code-chip);
+  padding: 0.1em 0.3em;
+  border-radius: 0.2em;
+}
+.reveal pre.code {
+  background: var(--navy);
+  color: #e8edf6;
+  font-family: var(--mono);
+  font-size: 0.6em;             /* 4-space indents + line numbers must clear a half */
+  line-height: 1.6;
+  padding: 0.9em 1.2em;
+  border-radius: 0.3em;
+  margin: 0;
+  white-space: pre;
+  overflow: hidden;             /* silent-failure contract: clip, never scroll */
+}
+.reveal .dark pre.code { background: var(--code-bg-dark); }
+.reveal pre.code > code {       /* markup safety net: <pre class="code"><code> renders identically */
+  all: unset;
+  font: inherit;
+}
+.reveal pre.code .cap { color: #8fa3c7; font-style: italic; }
+
+/* ── Stats: container's children are the stats; first div = the number ── */
+
+.reveal .stats { display: flex; flex-wrap: wrap; gap: 2.5em; margin-top: 0.4em; }
+.reveal .stats > div { min-width: 0; flex: 1 1 0; }
+.reveal .stats > div > :first-child {
+  font-family: var(--serif);
+  font-size: clamp(1.3em, 11cqw, 1.9em);
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.1;
+}
+.reveal .stats > div > :last-child { font-size: 0.52em; color: var(--ink-soft); margin-top: 0.4em; max-width: 10em; }
+/* many stats → smaller numbers (container query handles the rest) */
+.reveal .stats:has(> :nth-child(n+4)) > div > :first-child { font-size: clamp(1.1em, 9cqw, 1.4em); }
+
+/* ── Tables: hairline rows; compact themselves in narrow panels ──
+   The table IS the size container, so its 32px root font makes the
+   @container breakpoint ~640px — full width stays roomy, halves compact. */
+
+.reveal table { border-collapse: collapse; width: 100%; margin-top: 0.4em; }
+.reveal th {
+  text-align: left;
+  font-size: 0.42em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--navy-mid);
+  border-bottom: 2px solid var(--navy);
+  padding: 0.35em 0.6em;
+}
+.reveal td { font-size: 0.58em; padding: 0.45em 0.6em; border-bottom: 1px solid var(--hairline); color: var(--ink); }
+@container (max-width: 20em) {
+  .reveal th { padding: 0.3em 0.35em; letter-spacing: 0.08em; }
+  .reveal td { padding: 0.35em 0.35em; font-size: 0.52em; }
+}
+
+/* ── Statement (call to action): one large line, centered ──────── */
+
+/* An optional <p> AFTER it is the subtitle automatically.
+   XXX the SECTION centers the kicker+statement+sub group as one block —
+   margin:auto on the statement itself would push the subtitle to the bottom. */
+.reveal section:has(> .statement) { justify-content: center; text-align: center; align-items: center; }
+.reveal .statement {
+  font-family: var(--serif);
+  font-size: 1.7em;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--navy);
+  text-align: center;
+  margin: 0 auto;
+  max-width: 22em;
+  text-wrap: balance;
+}
+.reveal .statement + p {
+  text-align: center;
+  font-size: 0.62em;
+  color: var(--ink-soft);
+  margin: 0.6em auto 0;
+  max-width: 26em;
+}
+
+/* ── Quote: the deck's single serif "human voice" moment ─────────
+   Markup is flat: <div class="quote">…</div> + <p>Attribution</p>.
+   The ::before is the ghost quotation mark; the <p> after .quote is the
+   attribution, auto-styled — no wrapper needed. */
+
+.reveal section:has(> .quote) { justify-content: center; align-items: center; text-align: center; }
+.reveal .quote {
+  font-family: var(--quote-serif);
+  font-style: italic;
+  font-size: 1.05em;
+  line-height: 1.55;
+  color: var(--navy);
+  text-align: left;
+  border-left: 3px solid var(--navy);
+  padding-left: 0.5em;
+  position: relative;
+  max-width: 22em;
+  margin: 0 auto;
+}
+.reveal .quote::before {
+  content: '\201C';
+  position: absolute;
+  right: -0.05em;
+  top: -0.15em;
+  font-family: var(--quote-serif);
+  font-size: 7.5em;
+  line-height: 1;
+  color: rgba(43, 74, 139, 0.08);
+  pointer-events: none;
+}
+.reveal .quote + p {
+  font-size: 0.44em;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-top: 1em;
+  padding-left: 0.75em;
+}
+/* Quote as a SLOT PANEL (pairs): size steps down for a half; the
+   section-level centering rule simply doesn't fire on a .col child. */
+.reveal :is(.body, .col) > .quote { font-size: 0.8em; }
+
+/* ── Numbered process steps: children are steps; roles by position ── */
+
+.reveal .steps { display: flex; gap: 2em; margin-top: 1em; }
+.reveal .steps > * { flex: 1; border-top: 2px solid var(--navy); padding-top: 0.5em; min-width: 0; }
+.reveal .steps > * > :first-child { font-family: var(--serif); font-size: 1.1em; font-weight: 700; color: var(--navy-mid); }
+.reveal .steps > * > :nth-child(2) { font-size: 0.5em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; margin: 0.3em 0 0.2em; }
+.reveal .steps > * > :nth-child(n+3) { font-size: 0.52em; color: var(--ink-soft); line-height: 1.35; }
+
+/* ── Agenda: rows are bare divs; first span = number, last = label.
+   Top-hugged under the title with generous row padding — roomy at 3
+   points, naturally full at 5. Deliberately NOT stretched to the full
+   body height: 4 rows of 100%-height rows read as empty billboards. ── */
+.reveal .agenda { margin-top: 0.6em; width: 100%; }
+.reveal .agenda > div {
+  display: flex;
+  align-items: baseline;
+  gap: 1em;
+  padding: 0.55em 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.reveal .agenda > div > :first-child { font-family: var(--serif); font-size: 0.8em; color: var(--navy-mid); }
+.reveal .agenda > div > :last-child { font-size: 0.8em; }
+/* many points → shrink toward the old compact size (same self-sizing philosophy as lists) */
+.reveal .agenda:has(> :nth-child(n+6)) > div > span { font-size: 0.62em; }
+
+/* ── Cover / divider furniture: all position-derived ─────────────
+   The first <p> after h1 is the subtitle; the LAST <p> is the byline.
+   The h1's ::after is the short rule — no furniture tags at all.
+   On .divider, the FIRST child div is the big ghost section number. */
+
+.reveal .cover h1, .reveal .divider h1 { border-bottom: none; padding-bottom: 0; }
+.reveal .cover h1::after, .reveal .divider h1::after {
+  content: '';
+  display: block;
+  width: 4em;
+  height: 2px;
+  background: var(--navy-mid);
+  margin: 0.45em auto 0.35em;
+}
+.reveal .cover > h1 + p, .reveal .divider > h1 + p { font-size: 0.62em; color: #c9d2e4; }
+.reveal .cover > p:last-of-type:not(:first-of-type) { font-size: 0.44em; letter-spacing: 0.22em; text-transform: uppercase; color: #8a97b5; margin-top: 1.4em; }
+.reveal .divider h1 { font-size: 1.6em; }
+.reveal .divider h1::after { margin-left: 0; }   /* dividers are left-aligned */
+.reveal .divider > div:first-child {
+  font-family: var(--serif);
+  font-size: 2.6em;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Narrow slot (a half): stats and steps wrap to two per row ──
+   flex: 1 1 0 would squeeze five-six items into one unreadable row.
+   The query resolves against the slot's size container (.stats/.steps
+   themselves, or the enclosing .col): halves wrap, full width doesn't.
+   Lives AFTER the feature blocks so it wins the flex-basis cascade. */
+@container (max-width: 26em) {
+  .reveal .stats > div { flex: 1 1 40%; }
+  .reveal .steps { flex-wrap: wrap; }
+  .reveal .steps > * { flex: 1 1 28%; }
+}
+
+/* ── Timeline (full width only): N children share one line; the dot
+   is the child's ::before; .alt = the accent dot ── */
+
+.reveal .timeline { position: relative; display: flex; justify-content: space-between; margin-top: 2em; width: 100%; }
+.reveal .timeline::before { content: ''; position: absolute; top: 4px; left: 0; right: 0; height: 2px; background: var(--navy); }
+.reveal .timeline > * { width: 9em; text-align: center; position: relative; }
+.reveal .timeline > *::before {
+  content: '';
+  display: block;        /* sized pseudo-elements need block (else they collapse) */
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--navy);
+  margin: 0 auto;
+}
+.reveal .timeline > .alt::before { background: var(--navy-mid); }
+.reveal .timeline > * > :first-child { font-size: 0.42em; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--navy-mid); margin-top: 0.6em; }
+.reveal .timeline > * > :last-child { font-size: 0.5em; color: var(--ink-soft); line-height: 1.4; margin-top: 0.25em; }
+
+/* ── PDF export (?print-pdf) ─────────────────────────────────────
+   Reveal re-parents each slide into a .pdf-page wrapper and vendor CSS
+   force-strips padding + sets display:block!important at (0,3,2); these
+   rules tie that specificity (and win by source order) to restore the
+   flex scaffold. The old "inline top" landmine is gone at the root:
+   center:false means reveal never stamps it. */
+html.print-pdf .reveal .pdf-page { height: 720px !important; }
+/* ^ vendor gives .pdf-page only position+overflow, no height — without a
+   definite height the flex chain (section→body→figure→img) resolves to
+   the image's INTRINSIC size: a tall asset grows the page past 720px and
+   printToPDF paginates it into extra pages (bitten once, tall.jpg). */
+html.print-pdf .reveal .pdf-page > section {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  padding: var(--pad-y) var(--pad-x) !important;
+  height: 100% !important;
+  left: 0 !important;
+  overflow: hidden !important;
+}
+html.print-pdf .reveal .pdf-page > section.cover,
+html.print-pdf .reveal .pdf-page > section.divider { justify-content: center !important; }
+/* Quote and statement center themselves live (section:has(> .quote/.statement)),
+   but the refill's flex-start wins over them — restore the centering here. */
+html.print-pdf .reveal .pdf-page > section:has(> .quote),
+html.print-pdf .reveal .pdf-page > section:has(> .statement) { justify-content: center !important; }
+html.print-pdf .reveal .pdf-page > section.cover { align-items: center !important; text-align: center; }
