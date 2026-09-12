@@ -56,7 +56,7 @@
   --r-heading-color: var(--navy);
   --r-link-color: var(--navy-mid);
 
-  font-size: 32px;
+  font-size: 38.4px;
   font-family: var(--sans);
   color: var(--ink);
   text-align: left;
@@ -233,6 +233,13 @@
 .reveal section:has(> .body ~ .body) > .body {
   grid-row: 3;
 } /* col 1 / 2 by auto-placement */
+/* Paired halves: the FIRST panel must start flush with the neighbor's
+   first panel. Per-block margin nudges (steps 1em, stats 0.4em,
+   timeline 2em - later in source order than the slot's margin:0)
+   would offset the left top edge below the right paragraph top. */
+.reveal section:has(> .body ~ .body) > .body > :first-child {
+  margin-top: 0;
+}
 .reveal section:has(> .body ~ .body) > :where(footer, aside) {
   grid-area: 4 / 1 / 5 / 3;
 }
@@ -331,7 +338,7 @@
   margin: 0.35em 0;
 }
 .reveal .body > :where(ul, ol):has(> li:nth-child(n + 10)) > li {
-  margin: 0.25em 0;
+  margin: 0.2em 0;
 }
 /* first li's top margin escapes through the block panel (collapses through
    the ul edge) - zero it so a list's first line sits at slot top like a p */
@@ -353,7 +360,7 @@
 .reveal li {
   position: relative;
   padding-left: 1.2em;
-  margin: 0.5em 0;
+  margin: 0.4em 0;
 }
 .reveal li::before {
   content: "";
@@ -665,13 +672,13 @@
 .reveal .steps {
   display: flex;
   flex-wrap: wrap;
-  gap: 2em;
+  gap: 1em;
   margin-top: 1em;
 }
 .reveal .steps > * {
   flex: 1;
   border-top: 2px solid var(--navy);
-  padding-top: 0.5em;
+  padding-top: 0.25em;
   min-width: 0;
 }
 .reveal .steps > * > :first-child {
