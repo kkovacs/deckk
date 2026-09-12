@@ -8,7 +8,7 @@ It is a kind of **construction kit**, that defines **components** that I can com
 
 Fixed 1280×720 canvas, no build step, no package.json, zero custom JS, fully stock [reveal.js](https://revealjs.com/) + the official notes plugin only.
 
-I wanted to be able to say [Zulu Six](https://github.com/kkovacs/kkrc/blob/master/inject-ai-kk.md) to bootstrap presentations in my style that I can fine-tune later (= it has a good structure).
+I wanted to be able to tell [Zulu Six](https://github.com/kkovacs/kkrc/blob/master/inject-ai-kk.md) to bootstrap presentations in my style, that I can fine-tune manually (= it has a good structure).
 
 - **Serve**: Static webserver (`python3 -m http.server 8000`) or `bun run serve.ts`
 - **Present**: Usual reveal.js controls: arrows / hash URLs (`#/<section>/<slide>`); `class="fragment"` on any element makes it appear on click; **S** opens the speaker-notes view (`<aside class="notes">` in any slide)
