@@ -1,5 +1,6 @@
+#!/usr/bin/env bun
 // Minimal static file server for the deck - bun stdlib only, zero deps.
-// Why bun: one binary, no package.json, `bun run serve.ts`.
+// Why bun: one binary, no package.json; run directly (`./serve.ts`) or `bun run serve.ts`.
 const root = new URL('.', import.meta.url).pathname;
 
 // Loopback by default so the deck never faces the LAN; probes opt out via HOST=0.0.0.0
