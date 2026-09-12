@@ -1,24 +1,24 @@
-/* ══════════════════════════════════════════════════════════════════
-   deckk theme — reveal.js 5, zero deps, ZERO custom JS.
+/* ==================================================================
+   deckk theme - reveal.js 5, zero deps, ZERO custom JS.
 
-   PHILOSOPHY — the five principles that generate every rule in this
+   PHILOSOPHY - the five principles that generate every rule in this
    file (the rules themselves live in the authoring spec, below):
 
-   • Markup never states geometry — the STRUCTURE of the markup (the
+   - Markup never states geometry - the STRUCTURE of the markup (the
      count of children) IS the layout.
-   • Classes mean INTENT, never layout — center / nocrop / cap say
+   - Classes mean INTENT, never layout - center / nocrop / cap say
      what you want, never where pixels go.
-   • The SLOT decides typography, not the tag — swap a <ul> for <p>s,
+   - The SLOT decides typography, not the tag - swap a <ul> for <p>s,
      nothing moves.
-   • Self-sizing is the norm — content shrinks itself; never reach
+   - Self-sizing is the norm - content shrinks itself; never reach
      for a font-size by hand.
-   • Native mechanisms only — reveal fragments/gradients/notes plus
+   - Native mechanisms only - reveal fragments/gradients/notes plus
      plain CSS. If a feature needs JS, it is the wrong feature.
 
    The AUTHORING SPEC (how to write a slide) is the cheat-sheet comment
-   at the top of index.html — keep this file and that spec in sync.
+   at the top of index.html - keep this file and that spec in sync.
    Architecture rationale + verified landmines: AGENTS.md.
-   ══════════════════════════════════════════════════════════════════ */
+   ================================================================== */
 
 :root {
   --navy: #16294f; /* signature color */
@@ -63,19 +63,19 @@
 }
 
 /* Dark slides (cover / divider / closing): class="dark" plus the native
-   data-background-gradient attribute (no JS — reveal paints it on the
+   data-background-gradient attribute (no JS - reveal paints it on the
    slide's background layer, including print). */
 .reveal .dark {
   --r-heading-color: #ffffff;
   --r-main-color: #dfe4ee;
   --hairline: var(--hairline-dark);
-  /* panel ink flips too — slot typography hard-codes var(--ink), so a
+  /* panel ink flips too - slot typography hard-codes var(--ink), so a
      dark slide carrying a .body (thank-you+image) needs these remapped */
   --ink: #dfe4ee;
   --ink-soft: #8a97b5;
 }
 
-/* URLs in source footers are real links (target="_blank") — styled to stay
+/* URLs in source footers are real links (target="_blank") - styled to stay
    subtle: inherit the footnote gray, hairline underline. */
 .reveal .slides footer a {
   color: inherit;
@@ -87,9 +87,9 @@
   color: var(--navy-mid);
 }
 
-/* ── Slide scaffolding ─────────────────────────────────────────── */
+/* -- Slide scaffolding ------------------------------------------- */
 
-/* Every slide: self-padding, flex column (head → body → source). */
+/* Every slide: self-padding, flex column (head => body => source). */
 .reveal section {
   text-align: left;
   padding: var(--pad-y) var(--pad-x);
@@ -104,21 +104,21 @@
 }
 
 /* THE display landmine (verified against reveal 5.2.1 source + live probe):
-   reveal keeps slides rendered by stamping inline display:block — and it
+   reveal keeps slides rendered by stamping inline display:block - and it
    persists past the class flip, which is exactly how the outgoing slide
    stays visible during the fade. Inline style beats any class rule, so the
    flex scaffold needs !important or the outgoing slide re-flows to block
    layout mid-transition (the visible "jump before the transition").
    Scoped to ALL slides: visited nested slides can sit with NO state class
-   at all (probe-confirmed), so :is(.present,…) scoping is not enough.
+   at all (probe-confirmed), so :is(.present,...) scoping is not enough.
    Cost: slides reveal "unloads" via inline display:none stay rendered at
-   opacity 0 — harmless at deck sizes. */
+   opacity 0 - harmless at deck sizes. */
 .reveal .slides section {
   display: flex !important;
 }
 
 /* Stack sections are the position:absolute containing blocks for their
-   nested slides — keep them padding-free (vendor zeroes only their
+   nested slides - keep them padding-free (vendor zeroes only their
    vertical padding; box-sizing:border-box already neutralizes the rest,
    this is cheap insurance). */
 .reveal .stack {
@@ -176,7 +176,7 @@
   color: var(--navy);
 }
 
-/* Source footer — a BARE <footer> tag (semantically: metadata for its
+/* Source footer - a BARE <footer> tag (semantically: metadata for its
    section), placeable on ANY slide as a standalone one-liner: delete it,
    nothing else changes. On slides with a .body the flex filler pushes it
    to the bottom; on slides without one (statement, quote) it is pinned
@@ -198,21 +198,21 @@
   color: #8a97b5;
 }
 
-/* ── THE BODY: a grid that counts its own children ─────────────── */
+/* -- THE BODY: a grid that counts its own children --------------- */
 
-/* THE ONE RULE — the SECTION counts its .body children:
-   1 body → full width (the plain flex-column rules above),
-   2 body SIBLINGS → side-by-side halves, n → n columns.
+/* THE ONE RULE - the SECTION counts its .body children:
+   1 body => full width (the plain flex-column rules above),
+   2 body SIBLINGS => side-by-side halves, n => n columns.
    A .body is ONE COLUMN of the layout: its bare-panel children stack
    inside it, gap-spaced (grid items never collapse margins, so panel
    margins are zeroed to keep the rhythm uniform). No wrapper other
-   than .body exists — a slide that wants two columns writes two
+   than .body exists - a slide that wants two columns writes two
    .body divs, nothing else.
 
    Two-body slides go GRID, not flex-row: flex item heights are
    CROSS-axis (content-sized, never flexed), so a tall image would
    inflate the flex line before any stretch could contain it. Grid
-   gives the bodies a DEFINITE 1fr row — the chain that lets a lone
+   gives the bodies a DEFINITE 1fr row - the chain that lets a lone
    figure fill the column height. display needs !important to beat
    the .slides section { display:flex !important } landmine below
    (equal specificity; this rule is later in source order). Rows are
@@ -242,7 +242,7 @@
   grid-template-columns: 1fr;
   gap: 0.8em; /* the stack rhythm between panels */
   align-content: start; /* panels hug the top, right under the title */
-  flex: 1; /* fills the slide under head/source — in a
+  flex: 1; /* fills the slide under head/source - in a
                                   two-body row this same flex:1 is the
                                   horizontal share: equal halves */
   min-height: 0;
@@ -252,7 +252,7 @@
 }
 
 /* Every body child: a size container (powers cqw compaction). Feature
-   blocks and tables ARE the container their inner queries size to —
+   blocks and tables ARE the container their inner queries size to -
    one container per layout column, which is exactly what
    tables/stats should size to. */
 .reveal .body > * {
@@ -262,8 +262,8 @@
   container-type: inline-size;
 }
 
-/* Text panels are BLOCK — li margins must collapse (grid items never do,
-   which doubled list spacing once). Feature blocks (.stats .steps …) set
+/* Text panels are BLOCK - li margins must collapse (grid items never do,
+   which doubled list spacing once). Feature blocks (.stats .steps ...) set
    their own display:flex later in the file and win the cascade. */
 .reveal .body > :where(ul, ol, p) {
   display: block;
@@ -296,7 +296,7 @@
   width: 100%;
 }
 
-/* A lone figure fills its column's height — full-bleed placeholder or
+/* A lone figure fills its column's height - full-bleed placeholder or
    image. Percentage rows need definite heights down the chain: in a
    two-body row the flex line stretches each .body to the same definite
    height, then the body can hand that height to the figure via
@@ -306,18 +306,18 @@
   grid-template-rows: 100%;
 }
 
-/* ── Panel typography: keyed to the SLOT, not the tag ────────────
-   ul↔p swaps are visually a no-op. :where() keeps specificity at 0
+/* -- Panel typography: keyed to the SLOT, not the tag ------------
+   ul<=>p swaps are visually a no-op. :where() keeps specificity at 0
    so stray classes on content tags cannot override the system. */
 
 .reveal .body > :where(p, ul, ol) {
-  font-size: 0.75em; /* THE body size — one for all panels */
+  font-size: 0.75em; /* THE body size - one for all panels */
   line-height: 1.5;
   color: var(--ink);
   margin: 0;
 }
 /* No sibling margin-top rule: stacked panels are spaced by the grid gap
-   alone — uniform rhythm, no margin arithmetic. */
+   alone - uniform rhythm, no margin arithmetic. */
 
 /* Lists self-shrink as items pile up (the "lots of items = smaller font" rule) */
 .reveal .body > :where(ul, ol):has(> li:nth-child(n + 6)) {
@@ -326,7 +326,7 @@
 .reveal .body > :where(ul, ol):has(> li:nth-child(n + 10)) {
   font-size: 0.55em;
 }
-/* dense lists also breathe less vertically — 12+ items must clear the source line */
+/* dense lists also breathe less vertically - 12+ items must clear the source line */
 .reveal .body > :where(ul, ol):has(> li:nth-child(n + 6)) > li {
   margin: 0.35em 0;
 }
@@ -334,16 +334,16 @@
   margin: 0.25em 0;
 }
 /* first li's top margin escapes through the block panel (collapses through
-   the ul edge) — zero it so a list's first line sits at slot top like a p */
+   the ul edge) - zero it so a list's first line sits at slot top like a p */
 .reveal .body > :where(ul, ol) > li:first-child {
   margin-top: 0;
 }
 
-/* ── Bullets: unbreakable by construction, DEPTH-AWARE ──────────
+/* -- Bullets: unbreakable by construction, DEPTH-AWARE ----------
    list-style is dead deck-wide; every marker is a positioned ::before
-   living inside the li's own padding — nothing markup-side can move it.
-   Depth decides the marker: dot · small disc · small dot; ol: 1. → a. → i.
-   (each ol resets its own counter — numbering restarts per list). */
+   living inside the li's own padding - nothing markup-side can move it.
+   Depth decides the marker: dot - small disc - small dot; ol: 1. => a. => i.
+   (each ol resets its own counter - numbering restarts per list). */
 .reveal ul,
 .reveal ol {
   margin: 0.5em 0 0 0;
@@ -363,7 +363,7 @@
   width: 1.2em; /* = the li's padding-left */
   height: 1.5em; /* = the li's line-height: the marker box IS the first line box */
   display: flex;
-  align-items: center; /* marker centers on that line — at any font size, any depth */
+  align-items: center; /* marker centers on that line - at any font size, any depth */
   /* the dot is a 6px circle painted dead-center of that box */
   background: radial-gradient(circle 3px, var(--navy-mid) 99%, transparent 100%) no-repeat;
 }
@@ -381,7 +381,7 @@
   font-weight: 700;
 }
 /* depth 2: smaller disc (ul) / letter (ol); counters nest automatically.
-   Text markers inherit the li's font-size — their 1.5em box stays the line box,
+   Text markers inherit the li's font-size - their 1.5em box stays the line box,
    so flex-centering aligns them exactly like the dots. */
 .reveal li ol > li::before {
   content: counter(item, lower-alpha);
@@ -392,13 +392,13 @@
 .reveal li ul > li::before {
   background: radial-gradient(circle 2.5px, var(--navy-mid) 99%, transparent 100%) no-repeat;
 }
-/* depth 3: small dot (ul) / roman (ol) — content resets to empty (dot only);
+/* depth 3: small dot (ul) / roman (ol) - content resets to empty (dot only);
    the ul dot KEEPS the 1.2em box (auto width would collapse it to nothing) */
 .reveal li li ul > li::before {
   content: "";
   background: radial-gradient(circle 2px, var(--ink-soft) 99%, transparent 100%) no-repeat;
 }
-/* roman numerals run wide — give depth-3 ol room so 'iii' never collides */
+/* roman numerals run wide - give depth-3 ol room so 'iii' never collides */
 .reveal li li ol > li {
   padding-left: 1.6em;
 }
@@ -424,7 +424,7 @@
   font-size: 0.92em;
 }
 
-/* ── Images: bare tags, zero classes ───────────────────────────── */
+/* -- Images: bare tags, zero classes ----------------------------- */
 
 .reveal .body figure {
   margin: 0;
@@ -448,13 +448,13 @@
 }
 
 /* crop is the DEFAULT (above). nocrop = the opt-out for images that
-   must show whole — evidence, charts, anything where cropping lies.
+   must show whole - evidence, charts, anything where cropping lies.
    Later source order beats the default rule. */
 .reveal .body img.nocrop {
   object-fit: contain;
 }
 
-/* An EMPTY figure is the placeholder — pure CSS, no class, no JS.
+/* An EMPTY figure is the placeholder - pure CSS, no class, no JS.
    Drop an <img> inside the same <figure> and the placeholder vanishes. */
 .reveal .body figure:not(:has(img)) {
   flex: 1;
@@ -473,15 +473,15 @@
   content: "image placeholder";
 }
 
-/* ── Code: the third voice ────────────────────────────────────────
-   Inline <code> is a quiet chip — no border, tint matches the panel.
+/* -- Code: the third voice ----------------------------------------
+   Inline <code> is a quiet chip - no border, tint matches the panel.
    <pre class="code"> is a PANEL (slot child like <p>/<ul>): navy slab,
    mono, no syntax coloring (readable code needs no confetti at deck
-   size). Caption = the first line wrapped in <span class="cap"> — the
+   size). Caption = the first line wrapped in <span class="cap"> - the
    one sanctioned inline class (same spirit as .alt on timeline). */
 .reveal code {
   font-family: var(--mono);
-  font-size: 0.85em; /* mono runs wide — compensate against its parent */
+  font-size: 0.85em; /* mono runs wide - compensate against its parent */
   background: var(--code-chip);
   padding: 0.1em 0.3em;
   border-radius: 0.2em;
@@ -511,7 +511,7 @@
   font-style: italic;
 }
 
-/* ── Stats: container's children are the stats; first div = the number ── */
+/* -- Stats: container's children are the stats; first div = the number -- */
 
 .reveal .stats {
   display: flex;
@@ -536,14 +536,14 @@
   margin-top: 0.4em;
   max-width: 10em;
 }
-/* many stats → smaller numbers (container query handles the rest) */
+/* many stats => smaller numbers (container query handles the rest) */
 .reveal .stats:has(> :nth-child(n + 4)) > div > :first-child {
   font-size: clamp(1.1em, 9cqw, 1.4em);
 }
 
-/* ── Tables: hairline rows; compact themselves in narrow panels ──
+/* -- Tables: hairline rows; compact themselves in narrow panels --
    The table IS the size container, so its 32px root font makes the
-   @container breakpoint ~640px — full width stays roomy, halves compact. */
+   @container breakpoint ~640px - full width stays roomy, halves compact. */
 
 .reveal table {
   border-collapse: collapse;
@@ -577,10 +577,10 @@
   }
 }
 
-/* ── Statement (call to action): one large line, centered ──────── */
+/* -- Statement (call to action): one large line, centered -------- */
 
 /* An optional <p> AFTER it is the subtitle automatically.
-   XXX the SECTION centers the kicker+statement+sub group as one block —
+   XXX the SECTION centers the kicker+statement+sub group as one block -
    margin:auto on the statement itself would push the subtitle to the bottom. */
 .reveal section:has(> .statement) {
   justify-content: center;
@@ -606,10 +606,10 @@
   max-width: 26em;
 }
 
-/* ── Quote: the deck's single serif "human voice" moment ─────────
-   Markup is flat: <div class="quote">…</div> + <p>Attribution</p>.
+/* -- Quote: the deck's single serif "human voice" moment ---------
+   Markup is flat: <div class="quote">...</div> + <p>Attribution</p>.
    The ::before is the ghost quotation mark; the <p> after .quote is the
-   attribution, auto-styled — no wrapper needed. */
+   attribution, auto-styled - no wrapper needed. */
 
 .reveal section:has(> .quote) {
   justify-content: center;
@@ -649,7 +649,7 @@
   padding-left: 0.75em;
 }
 /* Quote as a SLOT PANEL (pairs): size steps down for a half, and margin
-   must be zeroed explicitly — .quote's own `margin: 0 auto` is LATER in
+   must be zeroed explicitly - .quote's own `margin: 0 auto` is LATER in
    source order than the slot's `.body > * { margin: 0 }` (equal spec),
    and auto margins opt a grid item out of stretching: combined with the
    slot's container-type: inline-size the shrink-to-fit width resolves
@@ -660,7 +660,7 @@
   margin: 0;
 }
 
-/* ── Numbered process steps: children are steps; roles by position ── */
+/* -- Numbered process steps: children are steps; roles by position -- */
 
 .reveal .steps {
   display: flex;
@@ -693,10 +693,10 @@
   line-height: 1.35;
 }
 
-/* ── Agenda: rows are bare divs; first span = number, last = label.
-   Top-hugged under the title with generous row padding — roomy at 3
+/* -- Agenda: rows are bare divs; first span = number, last = label.
+   Top-hugged under the title with generous row padding - roomy at 3
    points, naturally full at 5. Deliberately NOT stretched to the full
-   body height: 4 rows of 100%-height rows read as empty billboards. ── */
+   body height: 4 rows of 100%-height rows read as empty billboards. -- */
 .reveal .agenda {
   margin-top: 0.6em;
   width: 100%;
@@ -716,14 +716,14 @@
 .reveal .agenda > div > :last-child {
   font-size: 0.8em;
 }
-/* many points → shrink toward the old compact size (same self-sizing philosophy as lists) */
+/* many points => shrink toward the old compact size (same self-sizing philosophy as lists) */
 .reveal .agenda:has(> :nth-child(n + 6)) > div > span {
   font-size: 0.62em;
 }
 
-/* ── Cover / divider furniture: all position-derived ─────────────
+/* -- Cover / divider furniture: all position-derived -------------
    The first <p> after h1 is the subtitle; the LAST <p> is the byline.
-   The h1's ::after is the short rule — no furniture tags at all.
+   The h1's ::after is the short rule - no furniture tags at all.
    On .divider, the FIRST child div is the big ghost section number. */
 
 .reveal .cover h1,
@@ -765,10 +765,10 @@
   color: rgba(255, 255, 255, 0.25);
 }
 
-/* ── Narrow slot (a half): stats and steps wrap to two per row ──
+/* -- Narrow slot (a half): stats and steps wrap to two per row --
    flex: 1 1 0 would squeeze five-six items into one unreadable row.
    The query resolves against the slot's size container (the .stats/.steps
-   blocks themselves — their CHILDREN are the matched elements, since an
+   blocks themselves - their CHILDREN are the matched elements, since an
    element can never query ITSELF: that's why the steps' flex-wrap lives
    unconditionally in the base rule above, where at full width the
    basis-0 children can never overflow so wrap never triggers). Halves
@@ -783,8 +783,8 @@
   }
 }
 
-/* ── Timeline (full width only): N children share one line; the dot
-   is the child's ::before; .alt = the accent dot ── */
+/* -- Timeline (full width only): N children share one line; the dot
+   is the child's ::before; .alt = the accent dot -- */
 
 .reveal .timeline {
   position: relative;
@@ -834,7 +834,7 @@
   margin-top: 0.25em;
 }
 
-/* ── PDF export (?print-pdf) ─────────────────────────────────────
+/* -- PDF export (?print-pdf) -------------------------------------
    Reveal re-parents each slide into a .pdf-page wrapper and vendor CSS
    force-strips padding + sets display:block!important at (0,3,2); these
    rules tie that specificity (and win by source order) to restore the
@@ -843,8 +843,8 @@
 html.print-pdf .reveal .pdf-page {
   height: 720px !important;
 }
-/* ^ vendor gives .pdf-page only position+overflow, no height — without a
-   definite height the flex chain (section→body→figure→img) resolves to
+/* ^ vendor gives .pdf-page only position+overflow, no height - without a
+   definite height the flex chain (section=>body=>figure=>img) resolves to
    the image's INTRINSIC size: a tall asset grows the page past 720px and
    printToPDF paginates it into extra pages (bitten once, tall.jpg). */
 html.print-pdf .reveal .pdf-page > section {
@@ -861,7 +861,7 @@ html.print-pdf .reveal .pdf-page > section.divider {
   justify-content: center !important;
 }
 /* Quote and statement center themselves live (section:has(> .quote/.statement)),
-   but the refill's flex-start wins over them — restore the centering here. */
+   but the refill's flex-start wins over them - restore the centering here. */
 html.print-pdf .reveal .pdf-page > section:has(> .quote),
 html.print-pdf .reveal .pdf-page > section:has(> .statement) {
   justify-content: center !important;
@@ -870,7 +870,7 @@ html.print-pdf .reveal .pdf-page > section.cover {
   align-items: center !important;
   text-align: center;
 }
-/* Two-body sections lay out as a GRID (THE ONE RULE) — the refill's
+/* Two-body sections lay out as a GRID (THE ONE RULE) - the refill's
    flex !important would stack the halves vertically and paginate them
    onto separate pages; restore the grid at refill specificity. */
 html.print-pdf .reveal .pdf-page > section:has(> .body ~ .body) {

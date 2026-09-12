@@ -1,6 +1,6 @@
 // Viewport screenshots from the ?print-pdf view: bun tests/shot.mjs 9 10
 // (arguments = flattened print-page indices, 0-based). scrollIntoView + settle,
-// then a plain full-viewport capture — clip math is unreliable here.
+// then a plain full-viewport capture - clip math is unreliable here.
 import { writeFileSync } from 'node:fs';
 
 const DEV = 'http://127.0.0.1:9222';
@@ -38,6 +38,6 @@ for (const idx of process.argv.slice(2)) {
   await sleep(500);
   const shot = await send('Page.captureScreenshot', { format: 'png' });
   writeFileSync(`out/print-${String(idx).padStart(2, '0')}-${kind}.png`, Buffer.from(shot.data, 'base64'));
-  console.log(`captured page ${idx} → out/print-${String(idx).padStart(2, '0')}-${kind}.png`);
+  console.log(`captured page ${idx} => out/print-${String(idx).padStart(2, '0')}-${kind}.png`);
 }
 ws.close();

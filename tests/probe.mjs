@@ -10,7 +10,7 @@ const BASE = 'http://host.docker.internal:8000';
 const fails = [];
 const fail = (msg) => { fails.push(msg); console.log('  FAIL ' + msg); };
 
-// Minimal CDP over WebSocket — enough for navigate/eval/screenshot/print.
+// Minimal CDP over WebSocket - enough for navigate/eval/screenshot/print.
 async function attach() {
   const res = await fetch(`${DEV}/json/new?about:blank`, { method: 'PUT' });
   const t = await res.json();
@@ -37,7 +37,7 @@ async function evalJs(c, expr) {
   return r.result?.value;
 }
 
-// ── live view ──────────────────────────────────────────────────────
+// -- live view ------------------------------------------------------
 mkdirSync('out/png', { recursive: true });
 const c = await attach();
 await c.send('Page.enable');
@@ -50,7 +50,7 @@ const n = await evalJs(c, 'Reveal.getSlides().length');
 console.log(`slides: ${n}`);
 if (n !== 32) fail(`expected 32 slides, got ${n}`);
 
-// structural: top-level sections must be exactly the 6 groups — front
+// structural: top-level sections must be exactly the 6 groups - front
 // stack + 4 section stacks + closing thank-you stack (2 vertical slides).
 // A stray </section> turns mid-deck slides into orphans (rendering fine,
 // wrong navigation) and this is the only check that catches it.
@@ -62,8 +62,8 @@ const coords = await evalJs(c, `[...document.querySelectorAll('.slides > section
   sec.classList.contains('stack') ? [...sec.children].map((_, v) => ({ h, v })) : [{ h, v: 0 }])`);
 if (coords.length !== n) fail(`coord map ${coords.length} != slides ${n}`);
 
-// ── fragments advance (FIRST — arriving pristine; revisiting a slide
-// leaves its fragments revealed, a reveal quirk, not a bug) ────────
+// -- fragments advance (FIRST - arriving pristine; revisiting a slide
+// leaves its fragments revealed, a reveal quirk, not a bug) --------
 const fi = await evalJs(c, `Reveal.getSlides().findIndex(s => (s.querySelector('h2')?.textContent || '').includes('Fragments appear'))`);
 await evalJs(c, `Reveal.slide(${coords[fi].h}, ${coords[fi].v})`);
 await sleep(1500);
@@ -71,8 +71,8 @@ const f0 = await evalJs(c, `Reveal.getCurrentSlide().querySelectorAll('.fragment
 await evalJs(c, 'Reveal.next()'); await sleep(700);
 await evalJs(c, 'Reveal.next()'); await sleep(700);
 const f2 = await evalJs(c, `Reveal.getCurrentSlide().querySelectorAll('.fragment.visible').length`);
-if (!(f0 === 0 && f2 === 2)) fail(`fragments: before=${f0} after=${f2} (want 0→2)`);
-else console.log('fragments: 0 → 2 ✓');
+if (!(f0 === 0 && f2 === 2)) fail(`fragments: before=${f0} after=${f2} (want 0=>2)`);
+else console.log('fragments: 0 => 2 ✓');
 
 for (let i = 0; i < n; i++) {
   await evalJs(c, `Reveal.slide(${coords[i].h}, ${coords[i].v})`);
@@ -92,7 +92,7 @@ for (let i = 0; i < n; i++) {
 }
 console.log('overflow + screenshots: done');
 
-// ── print view ─────────────────────────────────────────────────────
+// -- print view -----------------------------------------------------
 await c.send('Page.navigate', { url: `${BASE}/?print-pdf#/` });
 await sleep(2500);
 const p = await evalJs(c, `(() => {
@@ -106,7 +106,7 @@ if (p.pages !== n) fail(`print pages ${p.pages} != slides ${n}`);
 if (p.tall) fail(`${p.tall} print pages overflow 720px`);
 if (p.inlineTop) fail(`${p.inlineTop} print pages carry a stamped inline top`);
 
-// ── real PDF ───────────────────────────────────────────────────────
+// -- real PDF -------------------------------------------------------
 const pdf = await c.send('Page.printToPDF', { preferCSSPageSize: true, printBackground: true });
 const buf = Buffer.from(pdf.data, 'base64');
 writeFileSync('out/deck.pdf', buf);

@@ -1,4 +1,4 @@
-// Minimal static file server for the deck — bun stdlib only, zero deps.
+// Minimal static file server for the deck - bun stdlib only, zero deps.
 // Why bun: one binary, no package.json, `bun run serve.ts`.
 const root = new URL('.', import.meta.url).pathname;
 
@@ -23,8 +23,8 @@ const server = Bun.serve({
   port,
   async fetch(req) {
     const path = new URL(req.url).pathname;
-    // "/" → index.html; everything else resolved under root; no traversal cleanup needed
-    // (Bun.file rejects paths outside cwd patterns — XXX: revisit if deck is exposed publicly)
+    // "/" => index.html; everything else resolved under root; no traversal cleanup needed
+    // (Bun.file rejects paths outside cwd patterns - XXX: revisit if deck is exposed publicly)
     const rel = path === '/' ? 'index.html' : path.slice(1);
     const file = Bun.file(root + rel);
     if (!(await file.exists())) return new Response('404', { status: 404 });
@@ -36,4 +36,4 @@ const server = Bun.serve({
 
 // 0.0.0.0 isn't browsable; show localhost for that case only.
 const shownHost = hostname === '0.0.0.0' ? 'localhost' : hostname;
-console.log(`deck → http://${shownHost}:${server.port}`);
+console.log(`deck => http://${shownHost}:${server.port}`);

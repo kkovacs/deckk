@@ -11,44 +11,44 @@
     <div class="reveal">
       <div class="slides">
         <!--
-  ══════════════════════════════════════════════════════════════════════
-  SLIDE AUTHORING CHEAT SHEET — read this before writing a slide
-  ══════════════════════════════════════════════════════════════════════
+  ======================================================================
+  SLIDE AUTHORING CHEAT SHEET - read this before writing a slide
+  ======================================================================
 
   A slide = <section> with, in order: optional kicker, optional h2,
   ONE OR MORE <div class="body">, optional <footer>.
-  THE TITLE ALWAYS SPANS THE TOP, ABOVE THE PANELS — never inside a panel.
+  THE TITLE ALWAYS SPANS THE TOP, ABOVE THE PANELS - never inside a panel.
 
-  THE ONE RULE: the SECTION counts its .body children —
-  1 body → full width, 2 → two halves. A .body is ONE COLUMN of the
+  THE ONE RULE: the SECTION counts its .body children -
+  1 body => full width, 2 => two halves. A .body is ONE COLUMN of the
   layout: its bare-panel children STACK inside it, gap-spaced. A slide
-  that wants two columns writes two .body divs — .body is the ONLY
+  that wants two columns writes two .body divs - .body is the ONLY
   wrapper a slide needs; never wrap panels in any other div.
   Never set widths, margins, font-sizes or inline styles on content.
 
   PANELS ARE BARE TAGS (no classes): <ul> <ol> <p> <table> <figure> <img>
-  — plus <pre class="code">, the navy code slab (optional <span class="cap">
+  - plus <pre class="code">, the navy code slab (optional <span class="cap">
   on the first line = muted caption; inline <code> is a quiet chip).
-  Swapping a <ul> for <p>s changes nothing visually — typography lives on
+  Swapping a <ul> for <p>s changes nothing visually - typography lives on
   the slot (a direct child of .body), not the tag. Nested lists:
-  just nest — depth picks the marker (dot · small disc · small dot; ol: 1. a. i.).
+  just nest - depth picks the marker (dot - small disc - small dot; ol: 1. a. i.).
   An EMPTY <figure> shows a placeholder; drop an <img> inside it when the
-  asset lands (assets/ dir). Images CROP to fill (object-fit: cover) —
+  asset lands (assets/ dir). Images CROP to fill (object-fit: cover) -
   class="nocrop" on the <img> flips to contain (letterbox, never crop).
 
-  ── Feature blocks (children are bare divs/spans; meaning by position) ──
+  -- Feature blocks (children are bare divs/spans; meaning by position) --
 
-    .stats > div      → [number div, caption div]           (full or half)
-    .steps > div      → [num div, label div, text div]      (full or half)
-    .timeline > div   → [date div, text div]                (FULL WIDTH only)
-    .agenda > div     → [num span, label span]  (fills body height evenly)
+    .stats > div      => [number div, caption div]           (full or half)
+    .steps > div      => [num div, label div, text div]      (full or half)
+    .timeline > div   => [date div, text div]                (FULL WIDTH only)
+    .agenda > div     => [num span, label span]  (fills body height evenly)
 
-  ── Slide types ───────────────────────────────────────────────────
+  -- Slide types ---------------------------------------------------
 
     Statement (call to action): <div class="statement">One line.</div>
-      — the <p> right after it is the subtitle, auto-styled.
-    Quote: <div class="quote">…</div> + <p>Attribution</p> (flat siblings;
-      also works as a SLOT PANEL in a pair — size steps down automatically).
+      - the <p> right after it is the subtitle, auto-styled.
+    Quote: <div class="quote">...</div> + <p>Attribution</p> (flat siblings;
+      also works as a SLOT PANEL in a pair - size steps down automatically).
     Dark slides (title / section / thank-you):
       <section class="dark cover"    data-background-gradient="var(--grad-navy)">
       <section class="dark divider"  data-background-gradient="var(--grad-navy)">
@@ -56,43 +56,43 @@
       h1 + p = subtitle; the last <p> on .cover = byline.
       A dark slide may also carry a .body (the closing thank-you demos it).
 
-  ── Centering ──────────────────────────────────────────────────────
+  -- Centering ------------------------------------------------------
 
     Panels are TOP-ALIGNED by default. class="center" on a .body centers
     that column's stack (on a full-width slide: the whole panel group).
 
-  ── Fragments (appear on click) — native reveal, no wiring ─────────
+  -- Fragments (appear on click) - native reveal, no wiring ---------
 
-    Add class="fragment" to any element — <li>, <tr>, <p>, even a .body.
+    Add class="fragment" to any element - <li>, <tr>, <p>, even a .body.
 
-  ── Speaker notes ─────────────────────────────────────────────────
+  -- Speaker notes -------------------------------------------------
 
-    <aside class="notes">…</aside> anywhere inside a section.
+    <aside class="notes">...</aside> anywhere inside a section.
     Press S while presenting to open the speaker view.
 
-  ── Source footer ─────────────────────────────────────────────────
+  -- Source footer -------------------------------------------------
 
-    <footer>Source: … — <a href="…" target="_blank">https://…</a></footer>
-    — a bare semantic tag, last child of ANY slide; small, gray, pinned
+    <footer>Source: ... - <a href="..." target="_blank">https://...</a></footer>
+    - a bare semantic tag, last child of ANY slide; small, gray, pinned
     to the bottom. Delete it and nothing else changes.
 
-  ── Auto-sizing (do NOT fight it by hand) ─────────────────────────
+  -- Auto-sizing (do NOT fight it by hand) -------------------------
 
-    • Lists shrink themselves at 6+ / 10+ items (counted per panel).
-    • Stats shrink at 4+; steps divide the row evenly — add children
+    - Lists shrink themselves at 6+ / 10+ items (counted per panel).
+    - Stats shrink at 4+; steps divide the row evenly - add children
       freely. In a HALF both wrap two per row (container-query driven:
-      six stats = a 2×3 block, six steps = a 3×2 block, four = 2×2).
-    • Tables compact in a half; keep ≤4 columns in a half, ≤5 full width.
-    • Code slabs clip, never scroll — keep ≤13 lines full width, ≤9 in a half.
-    • Overflow is a silent failure (fixed 1280×720 canvas): if a slide is
-      overfull it clips — split it.
+      six stats = a 2x3 block, six steps = a 3x2 block, four = 2x2).
+    - Tables compact in a half; keep <=4 columns in a half, <=5 full width.
+    - Code slabs clip, never scroll - keep <=13 lines full width, <=9 in a half.
+    - Overflow is a silent failure (fixed 1280x720 canvas): if a slide is
+      overfull it clips - split it.
 
-  XXX future: charts are deliberately unsupported — build each as a
+  XXX future: charts are deliberately unsupported - build each as a
   one-off (inline SVG or a styled <table>) when actually needed.
 -->
 
-        <!-- Front matter: Cover, then ↓ Agenda.
-           XXX reveal gotcha: a stack parent's OWN content is discarded —
+        <!-- Front matter: Cover, then Agenda.
+           XXX reveal gotcha: a stack parent's OWN content is discarded -
            stack wrappers must stay EMPTY; slides are nested children. -->
         <section>
           <section class="dark cover" data-background-gradient="var(--grad-navy)">
@@ -118,9 +118,9 @@
           </section>
         </section>
 
-        <!-- ══ 01 · Mechanisms: the system behaviors. Shown first — they
+        <!-- == 01 - Mechanisms: the system behaviors. Shown first - they
            demo as comparisons, so 2-col bodies appear before the
-           full-width geometry lesson in 02. ══ -->
+           full-width geometry lesson in 02. == -->
         <section>
           <section class="dark divider" data-background-gradient="var(--grad-navy)">
             <div>01</div>
@@ -129,7 +129,7 @@
             <p>Marker systems &middot; depth &middot; fragments &middot; self-sizing &mdash; no classes to remember.</p>
           </section>
 
-          <!-- list types — ul | ol side by side -->
+          <!-- list types - ul | ol side by side -->
           <section>
             <p class="kicker">Mechanisms &middot; List Types</p>
             <h2>Two marker systems, side by side</h2>
@@ -167,7 +167,7 @@
           </section>
 
           <!-- stacked lists: panels stack in ONE body, full width. Depth picks
-             the marker: ul → dot / dash / small dot; ol → 1. / a. / i. -->
+             the marker: ul => dot / dash / small dot; ol => 1. / a. / i. -->
           <section>
             <p class="kicker">Mechanisms &middot; Depth</p>
             <h2>Depth picks the marker &mdash; just nest</h2>
@@ -209,7 +209,7 @@
             </div>
           </section>
 
-          <!-- self-sizing — 4 vs 12 items, same slot: the ladder in action -->
+          <!-- self-sizing - 4 vs 12 items, same slot: the ladder in action -->
           <section>
             <p class="kicker">Mechanisms &middot; Self-Sizing</p>
             <h2>The type steps down by itself</h2>
@@ -244,8 +244,8 @@
           </section>
         </section>
 
-        <!-- ══ 02 · Full-Width: every block standing alone — bare panels,
-           the no-body slide types (quote, statement), feature blocks. ══ -->
+        <!-- == 02 - Full-Width: every block standing alone - bare panels,
+           the no-body slide types (quote, statement), feature blocks. == -->
         <section>
           <section class="dark divider" data-background-gradient="var(--grad-navy)">
             <div>02</div>
@@ -254,7 +254,7 @@
             <p>One panel per body &mdash; paragraphs, tables, images, slide types, feature blocks.</p>
           </section>
 
-          <!-- paragraph alone: ONE child → full width; swap the tag, nothing moves -->
+          <!-- paragraph alone: ONE child => full width; swap the tag, nothing moves -->
           <section>
             <p class="kicker">Full-Width &middot; Bare Panel</p>
             <h2>Two paragraphs share one column</h2>
@@ -264,7 +264,7 @@
                 slot, not the tag. The section counts its bodies: one means full width.
               </p>
               <p>
-                Two paragraphs stack in the same full-width body — no wrapper, no classes. Each one is gap-spaced above the next, margins
+                Two paragraphs stack in the same full-width body - no wrapper, no classes. Each one is gap-spaced above the next, margins
                 zeroed, geometry still unstated in the markup.
               </p>
             </div>
@@ -307,7 +307,7 @@
             </div>
           </section>
 
-          <!-- real asset: tall image in near-square boxes — contain | crop -->
+          <!-- real asset: tall image in near-square boxes - contain | crop -->
           <section>
             <p class="kicker">Full-Width &middot; Real Asset &middot; Tall</p>
             <h2>Wrong shape, two answers: contain vs crop</h2>
@@ -336,7 +336,7 @@
             <footer>Photo: picsum.photos (Lorem Picsum), deliberately 2400&times;600</footer>
           </section>
 
-          <!-- quote — the deck's single serif moment; footer pins absolutely -->
+          <!-- quote - the deck's single serif moment; footer pins absolutely -->
           <section>
             <p class="kicker">Full-Width &middot; Quote</p>
             <div class="quote">
@@ -349,7 +349,7 @@
             </footer>
           </section>
 
-          <!-- statement — one big line, subtitle auto-styled -->
+          <!-- statement - one big line, subtitle auto-styled -->
           <section>
             <p class="kicker">Full-Width &middot; Statement</p>
             <div class="statement">One big line is a whole slide.</div>
@@ -357,7 +357,7 @@
             <aside class="notes">Statement and quote have no .body; the section centers them itself.</aside>
           </section>
 
-          <!-- stats alone — the opt-in .center: a sparse slide that wants
+          <!-- stats alone - the opt-in .center: a sparse slide that wants
              its numbers vertically centered -->
           <section>
             <p class="kicker">Full-Width &middot; Stats</p>
@@ -438,17 +438,17 @@
                 </div>
               </div>
             </div>
-            <aside class="notes">Timeline is full-width only by spec — it never sits in a half.</aside>
+            <aside class="notes">Timeline is full-width only by spec - it never sits in a half.</aside>
           </section>
 
-          <!-- code — full-width navy slab; caption is the .cap span -->
+          <!-- code - full-width navy slab; caption is the .cap span -->
           <section>
             <p class="kicker">Full-Width &middot; Code</p>
             <h2>The navy slab is a slot panel, like any other</h2>
             <div class="body">
-              <pre class="code"><span class="cap">// one child → full width; a half shrinks the type by container query</span>
+              <pre class="code"><span class="cap">// one child => full width; a half shrinks the type by container query</span>
 function deckk(slide) {
-  // zero custom JS — fragments and placeholders are native reveal
+  // zero custom JS - fragments and placeholders are native reveal
   const body = slide.querySelector('.body');
   return [...body.children].map(panel =&gt; panel.tagName);
 }
@@ -458,9 +458,9 @@ function deckk(slide) {
           </section>
         </section>
 
-        <!-- ══ 03 · Pairs — reading: text, numbers, tables combined.
+        <!-- == 03 - Pairs - reading: text, numbers, tables combined.
            Two-sided slides: TWO .body divs, one per side, even when a
-           side holds a single panel. In a half, stats/steps wrap 2 per row. ══ -->
+           side holds a single panel. In a half, stats/steps wrap 2 per row. == -->
         <section>
           <section class="dark divider" data-background-gradient="var(--grad-navy)">
             <div>03</div>
@@ -639,11 +639,11 @@ function deckk(slide) {
               <p class="fragment">Paragraph two: what the middle of the plan proves, and to whom.</p>
               <p class="fragment">Paragraph three: what scale costs, and what gates it.</p>
             </div>
-            <aside class="notes">Fragments work on any element — here, one paragraph per click.</aside>
+            <aside class="notes">Fragments work on any element - here, one paragraph per click.</aside>
           </section>
         </section>
 
-        <!-- ══ 04 · Pairs — pictures & code: the visual half of the pairs ══ -->
+        <!-- == 04 - Pairs - pictures & code: the visual half of the pairs == -->
         <section>
           <section class="dark divider" data-background-gradient="var(--grad-navy)">
             <div>04</div>
@@ -679,7 +679,7 @@ function deckk(slide) {
             </div>
           </section>
 
-          <!-- quote | image — the quote is a slot panel too -->
+          <!-- quote | image - the quote is a slot panel too -->
           <section>
             <p class="kicker">Pairs &middot; Quote + Image</p>
             <h2>The quote is just a panel &mdash; here beside a picture</h2>
@@ -697,7 +697,7 @@ function deckk(slide) {
             <p class="kicker">Pairs &middot; Code + Code</p>
             <h2>Two slabs, two halves &mdash; same panel, narrower</h2>
             <div class="body">
-              <pre class="code"><span class="cap">// before — the naive walk</span>
+              <pre class="code"><span class="cap">// before - the naive walk</span>
 let total = 0;
 for (const item of cart) {
   total += item.price * item.qty;
@@ -705,7 +705,7 @@ for (const item of cart) {
 </pre>
             </div>
             <div class="body">
-              <pre class="code"><span class="cap"># after — the one-liner (python)</span>
+              <pre class="code"><span class="cap"># after - the one-liner (python)</span>
 def total(cart):
     return sum(
         i.price * i.qty for i in cart
@@ -722,13 +722,13 @@ def total(cart):
               <figure></figure>
             </div>
             <div class="body center">
-              <p>The right body opts into vertical centering with .body.center — its two paragraphs ride as one centered group.</p>
+              <p>The right body opts into vertical centering with .body.center - its two paragraphs ride as one centered group.</p>
               <p>Drop an &lt;img&gt; inside the empty figure when the asset lands; the placeholder vanishes by itself.</p>
             </div>
           </section>
         </section>
 
-        <!-- Thank you — classic closer, with the 2-col dark variant nested
+        <!-- Thank you - classic closer, with the 2-col dark variant nested
            UNDER it (a vertical slide: down from the plain thank-you) -->
         <section>
           <section class="dark cover" data-background-gradient="var(--grad-navy)">
@@ -737,7 +737,7 @@ def total(cart):
             <aside class="notes">Every slide type demonstrated. Silence is fine here too.</aside>
           </section>
 
-          <!-- thank you + image — dark slide WITH a .body, two halves -->
+          <!-- thank you + image - dark slide WITH a .body, two halves -->
           <section class="dark" data-background-gradient="var(--grad-navy)">
             <p class="kicker">Thank You</p>
             <h2>Questions &mdash; and the deck behind them</h2>
@@ -757,7 +757,7 @@ def total(cart):
     </div>
 
     <!-- The ONLY script in the deck: stock reveal + the official notes plugin.
-       No custom JS — fragments, gradients and placeholders are all native
+       No custom JS - fragments, gradients and placeholders are all native
        markup/CSS mechanisms now. -->
     <script type="module">
       import Reveal from "./vendor/reveal.esm.js";
@@ -766,15 +766,15 @@ def total(cart):
       Reveal.initialize({
         hash: true, // URL-driven navigation: #/<section>/<slide>
         transition: "fade",
-        margin: 0, // the slide pads itself (theme.css) — full-bleed
+        margin: 0, // the slide pads itself (theme.css) - full-bleed
         center: false, // sections fill the canvas; and reveal's
         // default centering stamps an inline `top`
         // on every slide that persists into the PDF
         // and pushes pages half a page down.
         pdfSeparateFragments: false, // emailed PDFs: one page per slide, not per click
         width: 1280,
-        height: 720, // 16:9 — also drives PDF page size
-        plugins: [RevealNotes], // S key → speaker notes view
+        height: 720, // 16:9 - also drives PDF page size
+        plugins: [RevealNotes], // S key => speaker notes view
       });
 
       window.Reveal = Reveal; // exposed for headless probing / console tinkering
