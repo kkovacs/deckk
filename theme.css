@@ -72,7 +72,25 @@
   /* panel ink flips too - slot typography hard-codes var(--ink), so a
      dark slide carrying a .body (thank-you+image) needs these remapped */
   --ink: #dfe4ee;
-  --ink-soft: #8a97b5;
+  --ink-soft: #b2bfd8;
+  /* Semantic accents and feature blocks must flip on dark slides too.
+     Empty figures restore the light-surface palette locally below. */
+  --navy: #f3f6fc;
+  --navy-mid: #c9d5ec;
+  --navy-soft: #b2bfd8;
+  --code-chip: rgba(255, 255, 255, 0.12);
+  color: var(--ink);
+}
+
+/* Ordinary links use the same accessible accent on light and dark slides.
+   Source-footer links stay quieter via the more specific rules below. */
+.reveal a {
+  color: var(--navy-mid);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+.reveal a:hover {
+  color: var(--navy);
 }
 
 /* URLs in source footers are real links (target="_blank") - styled to stay
@@ -88,6 +106,13 @@
 }
 
 /* -- Slide scaffolding ------------------------------------------- */
+
+/* Make the background's stacking level explicit. Reveal already creates a
+   context with perspective, but Obscura's compositor can otherwise paint a
+   gradient over the slide text. The slides remain above it at z-index:1. */
+.reveal .backgrounds {
+  z-index: 0;
+}
 
 /* Every slide: self-padding, flex column (head => body => source). */
 .reveal section {
@@ -195,7 +220,7 @@
   margin: 0;
 }
 .reveal .dark footer {
-  color: #8a97b5;
+  color: var(--ink-soft);
 }
 
 /* -- THE BODY: a grid that counts its own children --------------- */
@@ -272,7 +297,7 @@
 /* Text panels are BLOCK - li margins must collapse (grid items never do,
    which doubled list spacing once). Feature blocks (.stats .steps ...) set
    their own display:flex later in the file and win the cascade. */
-.reveal .body > :where(ul, ol, p) {
+.reveal .body > :where(ul, ol, p, blockquote, address, details) {
   display: block;
 }
 .reveal .body > :where(div) {
@@ -309,7 +334,7 @@
    height, then the body can hand that height to the figure via
    grid-template-rows: 100%. The neighboring body gets the same height
    and its centered stack rides over the full height. */
-.reveal .body:has(> figure:only-child) {
+.reveal .body:has(> figure:only-child, > video:only-child) {
   grid-template-rows: 100%;
 }
 
@@ -317,11 +342,101 @@
    ul<=>p swaps are visually a no-op. :where() keeps specificity at 0
    so stray classes on content tags cannot override the system. */
 
-.reveal .body > :where(p, ul, ol) {
+.reveal .body > :where(p, ul, ol, dl, blockquote, address, details, form) {
   font-size: 0.75em; /* THE body size - one for all panels */
   line-height: 1.5;
   color: var(--ink);
   margin: 0;
+}
+
+/* Semantic content uses the same slot scale instead of falling back to
+   browser-default black Times/Arial. h1/h2 remain slide-level titles. */
+.reveal .body > :where(h3, h4, h5, h6) {
+  font-family: var(--serif);
+  color: var(--navy);
+  line-height: 1.25;
+  margin: 0;
+  text-wrap: balance;
+}
+.reveal .body > h3 {
+  font-size: 0.85em;
+}
+.reveal .body > h4 {
+  font-size: 0.72em;
+}
+.reveal .body > h5 {
+  font-size: 0.62em;
+}
+.reveal .body > h6 {
+  font-size: 0.55em;
+}
+.reveal small {
+  font-size: 0.8em;
+}
+.reveal mark {
+  background: #fff1a8;
+  color: #1a1a1a;
+  padding: 0 0.12em;
+  border-radius: 0.1em;
+}
+.reveal :is(del, s) {
+  color: var(--ink-soft);
+}
+.reveal ins {
+  text-decoration-color: var(--navy-mid);
+}
+.reveal abbr[title] {
+  text-decoration: underline dotted;
+  text-underline-offset: 0.15em;
+}
+.reveal :is(a, button, input, select, textarea, summary):focus-visible {
+  outline: 3px solid var(--navy-mid);
+  outline-offset: 3px;
+}
+
+.reveal .body > blockquote {
+  border-left: 3px solid var(--navy-mid);
+  padding-left: 0.8em;
+  font-family: var(--quote-serif);
+}
+.reveal blockquote > p {
+  margin: 0;
+}
+.reveal blockquote > footer {
+  margin-top: 0.7em;
+}
+.reveal .body > address {
+  font-style: normal;
+}
+.reveal .body > hr {
+  width: 100%;
+  border: 0;
+  border-top: 1px solid var(--hairline);
+}
+.reveal dl {
+  display: grid;
+  grid-template-columns: minmax(5em, 0.35fr) 1fr;
+  gap: 0.4em 1em;
+}
+.reveal dt {
+  color: var(--navy);
+  font-weight: 700;
+}
+.reveal dd {
+  margin: 0;
+}
+.reveal details {
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  padding: 0.35em 0;
+}
+.reveal summary {
+  color: var(--navy);
+  font-weight: 700;
+  cursor: pointer;
+}
+.reveal details > p {
+  margin: 0.4em 0 0;
 }
 /* No sibling margin-top rule: stacked panels are spaced by the grid gap
    alone - uniform rhythm, no margin arithmetic. */
@@ -463,7 +578,7 @@
 
 /* An EMPTY figure is the placeholder - pure CSS, no class, no JS.
    Drop an <img> inside the same <figure> and the placeholder vanishes. */
-.reveal .body figure:not(:has(img)) {
+.reveal .body figure:not(:has(img, svg, picture, video, canvas)) {
   flex: 1;
   min-height: 340px;
   border: 1px solid var(--hairline);
@@ -476,15 +591,39 @@
   letter-spacing: 0.2em;
   text-transform: uppercase;
 }
-.reveal .body figure:not(:has(img))::after {
+.reveal .body figure:not(:has(img, svg, picture, video, canvas))::after {
   content: "image placeholder";
+}
+/* A placeholder is a LIGHT panel even on a dark slide. */
+.reveal .dark .body figure:not(:has(img, svg, picture, video, canvas)) {
+  --navy: #16294f;
+  --navy-mid: #2b4a8b;
+  --navy-soft: #6b7a99;
+}
+.reveal .body figure > picture {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.reveal .body figure > svg {
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+}
+.reveal svg :where(rect, circle, path, line, polyline, polygon) {
+  fill: var(--navy-mid);
+}
+.reveal svg text {
+  fill: var(--ink);
+  font-family: var(--sans);
+  font-size: 14px;
 }
 
 /* -- Code: the third voice ----------------------------------------
    Inline <code> is a quiet chip - no border, tint matches the panel.
    <pre class="code"> is a PANEL (slot child like <p>/<ul>): navy slab,
-   mono, no syntax coloring (readable code needs no confetti at deck
-   size). Caption = the first line wrapped in <span class="cap"> - the
+   mono; plain code is monochrome, common highlighter tokens use a
+   restrained accessible palette. Caption = <span class="cap"> - the
    one sanctioned inline class (same spirit as .alt on timeline). */
 .reveal code {
   font-family: var(--mono);
@@ -512,10 +651,169 @@
   /* markup safety net: <pre class="code"><code> renders identically */
   all: unset;
   font: inherit;
+  color: inherit;
+  background: transparent;
+  padding: 0;
 }
 .reveal pre.code .cap {
   color: #8fa3c7;
   font-style: italic;
+}
+
+/* Common syntax-highlighter vocabularies, plus literal custom elements such
+   as <string>. Restrained, high-contrast accents on BOTH navy surfaces. */
+.reveal pre.code :is(.hljs-comment, .comment, .token.comment) {
+  color: #a8b8d8;
+}
+.reveal pre.code :is(.hljs-keyword, .keyword, .token.keyword) {
+  color: #d6bcfa;
+}
+.reveal pre.code :is(.hljs-string, .hljs-attr, .hljs-attribute, .string, .token.string, string) {
+  color: #b7e4c7;
+}
+.reveal pre.code :is(.hljs-number, .hljs-literal, .number, .token.number) {
+  color: #f9d89c;
+}
+.reveal pre.code :is(.hljs-title, .hljs-built_in, .function, .token.function) {
+  color: #9dc7ff;
+}
+.reveal pre.code :is(.hljs-variable, .variable, .token.variable) {
+  color: #e8edf6;
+}
+
+/* Native form and media elements are content, not browser-default accidents. */
+.reveal fieldset {
+  border: 1px solid var(--hairline);
+  border-radius: 0.25em;
+  padding: 0.65em 0.8em;
+  min-width: 0;
+}
+.reveal legend {
+  color: var(--navy);
+  font-size: 0.65em;
+  font-weight: 700;
+  padding: 0 0.35em;
+}
+.reveal form p {
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
+  margin: 0.45em 0;
+}
+.reveal form p > label:first-child:not(:has(input)) {
+  flex: 0 0 4.5em;
+}
+.reveal label,
+.reveal output {
+  font-size: 0.65em;
+}
+.reveal :is(input, select, textarea, button) {
+  font-family: var(--sans);
+}
+.reveal :is(input:not([type="checkbox"], [type="radio"], [type="range"]), select, textarea) {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--hairline);
+  border-radius: 0.2em;
+  background: #ffffff;
+  color: #1a1a1a;
+  padding: 0.4em 0.5em;
+  font-size: 0.62em;
+}
+.reveal textarea {
+  line-height: 1.35;
+  resize: none;
+}
+.reveal :is(input[type="checkbox"], input[type="radio"]) {
+  width: 1em;
+  height: 1em;
+  margin: 0 0.2em 0 0;
+  accent-color: var(--navy-mid);
+}
+.reveal input[type="range"] {
+  appearance: none;
+  -webkit-appearance: none;
+  accent-color: var(--navy-mid);
+  min-width: 0;
+  width: 100%;
+  height: 0.3em;
+  border-radius: 1em;
+  background: var(--hairline); /* native track/value pseudos paint the actual value */
+}
+.reveal input[type="range"]::-webkit-slider-runnable-track {
+  height: 0.3em;
+  border-radius: 1em;
+  background: var(--hairline);
+}
+.reveal input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 0.8em;
+  height: 0.8em;
+  margin-top: -0.25em;
+  border: 0;
+  border-radius: 50%;
+  background: var(--navy-mid);
+}
+.reveal button {
+  border: 1px solid var(--navy);
+  border-radius: 0.2em;
+  background: var(--navy);
+  color: var(--r-background-color);
+  padding: 0.45em 0.75em;
+  font-size: 0.62em;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.reveal button[type="reset"] {
+  background: transparent;
+  color: var(--navy);
+}
+.reveal :is(meter, progress) {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 6em;
+  height: 0.45em;
+  border: 0;
+  border-radius: 1em;
+  overflow: hidden;
+  background: var(--code-chip);
+  accent-color: var(--navy-mid);
+}
+.reveal progress::-webkit-progress-bar {
+  background: var(--code-chip);
+}
+.reveal progress::-webkit-progress-value {
+  background: var(--navy-mid);
+}
+.reveal meter::-webkit-meter-bar {
+  background: var(--code-chip);
+  border: 0;
+}
+.reveal meter::-webkit-meter-optimum-value {
+  background: var(--navy-mid);
+}
+.reveal :is(audio, video) {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+.reveal audio {
+  min-height: 42px;
+  border-radius: 0.25em;
+  background: var(--code-bg);
+}
+.reveal video {
+  height: 8em; /* definite height: native poster/intrinsic sizing can exceed the canvas */
+  min-height: 0;
+  max-height: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: #101a33;
+}
+.reveal .body > video:only-child {
+  height: 100%;
 }
 
 /* -- Stats: container's children are the stats; first div = the number -- */
@@ -572,6 +870,28 @@
   padding: 0.45em 0.6em;
   border-bottom: 1px solid var(--hairline);
   color: var(--ink);
+}
+.reveal caption {
+  display: table-caption;
+  caption-side: top;
+  text-align: left;
+  color: var(--ink-soft);
+  font-size: 0.5em;
+  padding-bottom: 0.6em;
+}
+.reveal tbody th,
+.reveal tfoot th {
+  font-size: 0.58em;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--navy);
+  padding: 0.45em 0.6em;
+  border-bottom: 1px solid var(--hairline);
+}
+.reveal tfoot :is(th, td) {
+  border-top: 2px solid var(--navy);
+  border-bottom: 0;
+  font-weight: 700;
 }
 @container (max-width: 20em) {
   .reveal th {
@@ -756,7 +1076,7 @@
   font-size: 0.44em;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #8a97b5;
+  color: var(--ink-soft);
   margin-top: 1.4em;
 }
 .reveal .divider h1 {
@@ -847,6 +1167,10 @@
    rules tie that specificity (and win by source order) to restore the
    flex scaffold. The old "inline top" landmine is gone at the root:
    center:false means reveal never stamps it. */
+html.print-pdf .reveal .pause-overlay,
+html.print-pdf .reveal::after {
+  display: none !important; /* empty reveal pseudo adds a 38px line box in auto-height print */
+}
 html.print-pdf .reveal .pdf-page {
   height: 720px !important;
 }

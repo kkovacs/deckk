@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>deckk — HTML element audit</title>
+    <link rel="stylesheet" href="../vendor/reveal.css" />
+    <link rel="stylesheet" href="../theme.css" />
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section class="dark cover" data-background-gradient="var(--grad-navy)">
+          <p class="kicker">Verification fixture</p>
+          <h1>HTML element audit</h1>
+          <p>Light and dark surfaces, live and print, with no fixture-specific CSS.</p>
+          <p>Semantic HTML &middot; controls &middot; media &middot; highlighted code</p>
+        </section>
+
+        <section>
+          <p class="kicker">Headings &amp; prose</p>
+          <h2>The full heading ladder stays in the same voice</h2>
+          <div class="body">
+            <h3>Heading three introduces a substantial idea</h3>
+            <p>Body copy remains comfortable beside the heading hierarchy.</p>
+            <h4>Heading four labels a supporting group</h4>
+            <p>Its weight and spacing should read as structure, not body text.</p>
+          </div>
+          <div class="body">
+            <h5>Heading five is quiet but legible</h5>
+            <p>Small headings still need clear contrast and hierarchy.</p>
+            <h6>Heading six is the smallest heading</h6>
+            <p>Body copy remains the reference size for ordinary prose.</p>
+          </div>
+        </section>
+
+        <section>
+          <p class="kicker">Inline semantics</p>
+          <h2>Emphasis, annotations, edits, and scientific notation</h2>
+          <div class="body">
+            <p><strong>Strong importance</strong>, <em>emphasized text</em>, <b>keyword attention</b>, and <i>alternate voice</i>.</p>
+            <p><small>Fine print remains readable</small>, while <mark>marked evidence</mark> is visible without shouting.</p>
+            <p>
+              <del>Removed wording</del> and <ins>added wording</ins> are distinct; <s>obsolete wording</s> and <u>annotated text</u> work
+              too.
+            </p>
+            <p>
+              Einstein wrote E = mc<sup>2</sup>; water is H<sub>2</sub>O. Use <abbr title="HyperText Markup Language">HTML</abbr> for
+              structure.
+            </p>
+            <p>
+              A <a href="https://example.com">clear inline link</a>, <cite>The Design of Everyday Things</cite>, and
+              <q>a short quotation</q>.
+            </p>
+            <p>Meet <time datetime="2026-09-12T14:30">12 September at 14:30</time> with <data value="42">forty-two</data> records.</p>
+          </div>
+        </section>
+
+        <section>
+          <p class="kicker">Code voices</p>
+          <h2>Inline code, keyboard input, output, variables, and preformatted text</h2>
+          <div class="body">
+            <p>
+              Run <code>bun tests/probe.mjs</code>, press <kbd>Ctrl</kbd> + <kbd>Enter</kbd>, then inspect <samp>ALL PASS</samp>. The
+              <var>count</var> variable is local.
+            </p>
+            <pre class="code"><span class="cap">// literal HTML</span>
+const s = '&lt;string&gt;ok&lt;/string&gt;';
+const greeting = "Hello";
+const answer = 42;
+// comments and identifiers
+</pre>
+          </div>
+          <div class="body">
+            <p>A code panel accepts either bare text or a nested <code>&lt;code&gt;</code> element.</p>
+            <pre class="code"><code><span class="hljs-comment">// highlight.js tokens</span>
+<span class="hljs-keyword">const</span> <span class="hljs-title">message</span> = <span class="hljs-string">"readable"</span>;
+<span class="hljs-keyword">let</span> <span class="hljs-variable">answer</span> = <span class="hljs-number">42</span>;
+<span class="hljs-built_in">console</span>.log(message);</code></pre>
+            <p>
+              Generic highlighters also use <code>&lt;span class="string"&gt;</code> and <code>&lt;span class="token string"&gt;</code>.
+            </p>
+          </div>
+        </section>
+
+        <section>
+          <p class="kicker">Quotations &amp; contact</p>
+          <h2>Long quotations and attribution have semantic homes</h2>
+          <div class="body">
+            <blockquote>
+              <p>The details are not the details. They make the design.</p>
+              <footer>Charles Eames &mdash; <cite>Design Q&amp;A</cite></footer>
+            </blockquote>
+            <p>Inline citations such as <cite>The Elements of Style</cite> should remain subordinate to the prose.</p>
+          </div>
+          <div class="body">
+            <address>Deckk Studio<br />42 Example Avenue<br /><a href="mailto:hello@example.com">hello@example.com</a></address>
+            <p>Addresses may contain line breaks and ordinary links without turning into a centered cover.</p>
+          </div>
+        </section>
+
+        <section>
+          <p class="kicker">Definitions &amp; separators</p>
+          <h2>Description lists and horizontal rules are first-class content</h2>
+          <div class="body">
+            <dl>
+              <dt>Slot</dt>
+              <dd>A direct child of a body, responsible for its own content.</dd>
+              <dt>Panel</dt>
+              <dd>A list, paragraph, table, figure, or code slab.</dd>
+              <dt>Canvas</dt>
+              <dd>The fixed 1280 by 720 slide surface.</dd>
+            </dl>
+          </div>
+          <div class="body">
+            <p>A rule separates two thoughts without introducing another wrapper.</p>
+            <hr />
+            <p>The next thought begins with the same readable body typography.</p>
+          </div>
+        </section>
+
+        <section>
+          <p class="kicker">Complete table anatomy</p>
+          <h2>Captions, scoped headers, column groups, and totals</h2>
+          <div class="body">
+            <table>
+              <caption>
+                Quarterly delivery summary
+              </caption>
+              <colgroup>
+                <col />
+                <col span="2" />
+                <col />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th scope="col">Region</th>
+                  <th scope="col">Q1</th>
+                  <th scope="col">Q2</th>
+                  <th scope="col">Change</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">North</th>
+                  <td>42</td>
+                  <td>48</td>
+                  <td>+14%</td>
+                </tr>
+                <tr>
+                  <th scope="row">South</th>
+                  <td>31</td>
+                  <td>35</td>
+                  <td>+13%</td>
+                </tr>
+                <tr>
+                  <th scope="row">West</th>
+                  <td>28</td>
+                  <td>36</td>
+                  <td>+29%</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th scope="row">Total</th>
+                  <td>101</td>
+                  <td>119</td>
+                  <td>+18%</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </section>
+
+        <section>
+          <p class="kicker">Figures, captions &amp; vector art</p>
+          <h2>Images and inline SVG inherit the slide’s visual language</h2>
+          <div class="body">
+            <figure>
+              <picture><img src="../assets/wide.jpg" alt="Wide river photograph" /></picture>
+              <figcaption>Figure 1. A real image with a semantic caption.</figcaption>
+            </figure>
+          </div>
+          <div class="body">
+            <figure>
+              <svg viewBox="0 0 400 240" role="img" aria-labelledby="audit-chart-title">
+                <title id="audit-chart-title">A simple three-bar chart</title>
+                <rect x="30" y="130" width="70" height="80" />
+                <rect x="165" y="70" width="70" height="140" />
+                <rect x="300" y="25" width="70" height="185" />
+                <text x="65" y="230" text-anchor="middle">One</text>
+                <text x="200" y="230" text-anchor="middle">Two</text>
+                <text x="335" y="230" text-anchor="middle">Three</text>
+              </svg>
+              <figcaption>Figure 2. Inline SVG shapes and text.</figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <section>
+          <p class="kicker">Forms &amp; state</p>
+          <h2>Native controls are readable, aligned, and visibly focusable</h2>
+          <div class="body">
+            <form>
+              <fieldset>
+                <legend>Presenter details</legend>
+                <p><label for="audit-name">Name</label><input id="audit-name" name="name" type="text" value="Ada Lovelace" /></p>
+                <p><label for="audit-email">Email</label><input id="audit-email" name="email" type="email" value="ada@example.com" /></p>
+                <p>
+                  <label for="audit-topic">Topic</label
+                  ><select id="audit-topic" name="topic">
+                    <option>Design systems</option>
+                    <option>Accessibility</option>
+                  </select>
+                </p>
+                <p>
+                  <label for="audit-notes">Notes</label><textarea id="audit-notes" name="notes" rows="2">A readable text area.</textarea>
+                </p>
+              </fieldset>
+            </form>
+          </div>
+          <div class="body">
+            <form>
+              <fieldset>
+                <legend>Session options</legend>
+                <p>
+                  <label><input type="checkbox" checked /> Include speaker notes</label>
+                </p>
+                <p>
+                  <label><input type="radio" name="mode" checked /> Present</label> <label><input type="radio" name="mode" /> Review</label>
+                </p>
+                <p><label for="audit-volume">Volume</label><input id="audit-volume" type="range" value="70" /></p>
+                <p><button type="button">Start presenting</button> <button type="reset">Reset</button></p>
+                <p>
+                  <output name="result">Ready</output> <meter min="0" max="100" value="70">70%</meter>
+                  <progress max="100" value="70">70%</progress>
+                </p>
+              </fieldset>
+            </form>
+          </div>
+        </section>
+
+        <section>
+          <p class="kicker">Disclosure &amp; media controls</p>
+          <h2>Details, summaries, audio, and video remain native</h2>
+          <div class="body">
+            <details open>
+              <summary>What does this fixture verify?</summary>
+              <p>Computed contrast, overflow, focus indicators, and screenshots on every slide.</p>
+            </details>
+            <details>
+              <summary>A closed disclosure</summary>
+              <p>Its content is intentionally hidden.</p>
+            </details>
+            <audio controls src="../assets/tone.wav" aria-label="Audio control example"></audio>
+          </div>
+          <div class="body">
+            <video controls aria-label="Video control example" poster="../assets/wide.jpg"></video>
+            <p>Media keeps its native interaction model and fits its slot without overflowing.</p>
+          </div>
+        </section>
+
+        <section class="dark" data-background-gradient="var(--grad-navy)">
+          <p class="kicker">Dark-surface regression</p>
+          <h2>Every semantic element survives the navy background</h2>
+          <div class="body">
+            <p>
+              <strong>Strong text</strong>, <em>emphasis</em>, <mark>a marked phrase</mark>, <del>an edit</del>, <ins>an addition</ins>, and
+              <a href="https://example.com">a link</a>.
+            </p>
+            <blockquote>
+              <p>Readable quotations need light text and a visible boundary.</p>
+              <footer>A citation on navy</footer>
+            </blockquote>
+            <p>Inline <code>&lt;string&gt;</code> and <kbd>Esc</kbd> remain distinct from the background.</p>
+          </div>
+          <div class="body">
+            <pre class="code"><span class="cap">// code on a dark slide</span>
+const s = "&lt;string&gt;ok";
+const count = 42;</pre>
+            <dl>
+              <dt>Contrast</dt>
+              <dd>Light foreground, restrained accents.</dd>
+              <dt>Focus</dt>
+              <dd>A visible outline for keyboard users.</dd>
+            </dl>
+          </div>
+        </section>
+      </div>
+    </div>
+    <script type="module">
+      import Reveal from "../vendor/reveal.esm.js";
+      Reveal.initialize({
+        hash: true,
+        transition: "none",
+        margin: 0,
+        center: false,
+        pdfSeparateFragments: false,
+        width: 1280,
+        height: 720,
+      });
+      window.Reveal = Reveal;
+    </script>
+  </body>
+</html>

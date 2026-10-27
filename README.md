@@ -1,6 +1,6 @@
 # deckk
 
-Zero-dependency reveal.js deck *template*, primarily for my personal use.
+Zero-dependency reveal.js deck _template_, primarily for my personal use.
 
 **See demo at:** <https://kkovacs.github.io/deckk/>
 
@@ -12,7 +12,8 @@ I wanted to be able to tell [Zulu Six](https://github.com/kkovacs/kkrc/blob/mast
 
 - **Serve**: Static webserver (`python3 -m http.server 8000`) or `bun run serve.ts`
 - **Present**: Usual reveal.js controls: arrows / hash URLs (`#/<section>/<slide>`); `class="fragment"` on any element makes it appear on click; **S** opens the speaker-notes view (`<aside class="notes">` in any slide)
-- **Print/PDF**: Add `?print-pdf` to the URL and print to PDF (one 1280×720 page per slide, all fragments shown, clickable source URLs)
+- **Print/PDF**: Add `?print-pdf` to the URL and print to PDF (A4 landscape, one proportional 16:9 slide per page, all fragments shown, clickable source URLs)
 - **Human's** instructions: read the cheat-sheet at the top of `index.html`.
 - **AI's** instructions, architecture, design rationale, and landmines: [AGENTS.md](AGENTS.md)
-- **Verify**: Only needed if you change the structure. Run `bun tests/probe.mjs` against a headless-Chrome CDP endpoint (setup + gotchas: `AGENTS.md`)
+- **Verify**: Run `bun tests/probe.mjs` against headless Chrome (setup + gotchas: `AGENTS.md`). For Obscura, start `obscura serve --allow-private-network`, then run `OBSCURA=1 BASE=http://127.0.0.1:8000 bun tests/probe.mjs`.
+- **HTML element audit**: `tests/elements.html` covers semantic text, headings, lists, tables, code tokens, images/SVG, forms, disclosure, media, and dark slides. With the same servers running, `bun tests/elements-probe.mjs` writes screenshots, contrast/focus/overflow results, and a PDF to `out/elements/`.

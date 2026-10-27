@@ -27,8 +27,12 @@
   Never set widths, margins, font-sizes or inline styles on content.
 
   PANELS ARE BARE TAGS (no classes): <ul> <ol> <p> <table> <figure> <img>
+  <dl> <blockquote> <address> <details> <form> <audio> <video>, h3..h6,
   - plus <pre class="code">, the navy code slab (optional <span class="cap">
   on the first line = muted caption; inline <code> is a quiet chip).
+  Semantic inline tags, table captions/footers/row headers, SVG, native
+  controls, and common syntax-token classes are styled for light AND dark.
+  Run the visual matrix in tests/elements.html after changing these rules.
   Swapping a <ul> for <p>s changes nothing visually - typography lives on
   the slot (a direct child of .body), not the tag. Nested lists:
   just nest - depth picks the marker (dot - small disc - small dot; ol: 1. a. i.).
@@ -89,6 +93,10 @@
 
   XXX future: charts are deliberately unsupported - build each as a
   one-off (inline SVG or a styled <table>) when actually needed.
+
+  VERIFICATION: tests/elements.html is an 11-slide semantic-HTML matrix.
+  With serve.ts + headless Chrome, `bun tests/elements-probe.mjs` checks
+  contrast, canvas bounds, keyboard focus, screenshots, and A4 print/PDF.
 -->
 
         <!-- Front matter: Cover, then Agenda.

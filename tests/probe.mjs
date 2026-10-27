@@ -3,50 +3,72 @@
 // Run from the repo root: bun tests/probe.mjs (outputs to out/).
 // Gotchas honored: reach deck via host.docker.internal; navigate once per
 // view; Reveal.slide() + settle between screenshots; one op per WS message.
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from "node:fs";
 
-const DEV = 'http://127.0.0.1:9222';
-const BASE = 'http://host.docker.internal:8000';
+const DEV = process.env.CDP ?? "http://127.0.0.1:9222";
+const BASE = process.env.BASE ?? "http://host.docker.internal:8000";
 const fails = [];
-const fail = (msg) => { fails.push(msg); console.log('  FAIL ' + msg); };
+const fail = (msg) => {
+  fails.push(msg);
+  console.log("  FAIL " + msg);
+};
 
 // Minimal CDP over WebSocket - enough for navigate/eval/screenshot/print.
 async function attach() {
-  const res = await fetch(`${DEV}/json/new?about:blank`, { method: 'PUT' });
-  const t = await res.json();
-  const ws = new WebSocket(t.webSocketDebuggerUrl);
-  await new Promise((ok, bad) => { ws.onopen = ok; ws.onerror = bad; });
+  // Obscura uses explicit target sessions; stock Chrome accepts /json/new.
+  const ws = new WebSocket(
+    process.env.OBSCURA
+      ? `${DEV.replace(/^http/, "ws")}/devtools/browser`
+      : (await (await fetch(`${DEV}/json/new?about:blank`, { method: "PUT" })).json()).webSocketDebuggerUrl,
+  );
+  await new Promise((ok, bad) => {
+    ws.onopen = ok;
+    ws.onerror = bad;
+  });
   let id = 0;
+  let sessionId;
   const pending = new Map();
   ws.onmessage = (e) => {
     const m = JSON.parse(e.data);
-    if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); }
+    if (m.id && pending.has(m.id)) {
+      pending.get(m.id)(m);
+      pending.delete(m.id);
+    }
   };
-  const send = (method, params = {}) => new Promise((ok) => {
-    const i = ++id; pending.set(i, (m) => ok(m.result ?? m));
-    ws.send(JSON.stringify({ id: i, method, params }));
-  });
+  const send = (method, params = {}) =>
+    new Promise((ok, bad) => {
+      const i = ++id;
+      pending.set(i, (m) => (m.error ? bad(new Error(`${method}: ${m.error.message}`)) : ok(m.result)));
+      ws.send(JSON.stringify({ id: i, method, params, ...(sessionId ? { sessionId } : {}) }));
+    });
+  if (process.env.OBSCURA) {
+    const { targetId } = await send("Target.createTarget", { url: "about:blank" });
+    ({ sessionId } = await send("Target.attachToTarget", { targetId, flatten: true }));
+  }
   return { send, close: () => ws.close() };
 }
 
-const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function evalJs(c, expr) {
-  const r = await c.send('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true });
-  if (r.exceptionDetails) throw new Error('eval: ' + JSON.stringify(r.exceptionDetails.exception?.description ?? r.exceptionDetails.text));
+  const r = await c.send("Runtime.evaluate", { expression: expr, returnByValue: true, awaitPromise: true });
+  if (r.exceptionDetails) throw new Error("eval: " + JSON.stringify(r.exceptionDetails.exception?.description ?? r.exceptionDetails.text));
   return r.result?.value;
 }
 
 // -- live view ------------------------------------------------------
-mkdirSync('out/png', { recursive: true });
+mkdirSync("out/png", { recursive: true });
 const c = await attach();
-await c.send('Page.enable');
-await c.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
-await c.send('Page.navigate', { url: `${BASE}/` });
+await c.send("Page.enable");
+await c.send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
+await c.send("Page.navigate", { url: `${BASE}/` });
 await sleep(2500);
-if (!(await evalJs(c, '!!window.Reveal && Reveal.isReady()'))) { console.log('FAIL reveal not ready'); process.exit(1); }
+if (!(await evalJs(c, "!!window.Reveal && Reveal.isReady()"))) {
+  console.log("FAIL reveal not ready");
+  process.exit(1);
+}
 
-const n = await evalJs(c, 'Reveal.getSlides().length');
+const n = await evalJs(c, "Reveal.getSlides().length");
 console.log(`slides: ${n}`);
 if (n !== 32) fail(`expected 32 slides, got ${n}`);
 
@@ -58,8 +80,11 @@ const groups = await evalJs(c, `document.querySelectorAll('.slides > section').l
 if (groups !== 6) fail(`expected 6 top-level groups, got ${groups}`);
 
 // slide() takes (h,v) coords of top-level/nested sections, NOT flat indices
-const coords = await evalJs(c, `[...document.querySelectorAll('.slides > section')].flatMap((sec, h) =>
-  sec.classList.contains('stack') ? [...sec.children].map((_, v) => ({ h, v })) : [{ h, v: 0 }])`);
+const coords = await evalJs(
+  c,
+  `[...document.querySelectorAll('.slides > section')].flatMap((sec, h) =>
+  sec.classList.contains('stack') ? [...sec.children].map((_, v) => ({ h, v })) : [{ h, v: 0 }])`,
+);
 if (coords.length !== n) fail(`coord map ${coords.length} != slides ${n}`);
 
 // -- fragments advance (FIRST - arriving pristine; revisiting a slide
@@ -68,16 +93,20 @@ const fi = await evalJs(c, `Reveal.getSlides().findIndex(s => (s.querySelector('
 await evalJs(c, `Reveal.slide(${coords[fi].h}, ${coords[fi].v})`);
 await sleep(1500);
 const f0 = await evalJs(c, `Reveal.getCurrentSlide().querySelectorAll('.fragment.visible').length`);
-await evalJs(c, 'Reveal.next()'); await sleep(700);
-await evalJs(c, 'Reveal.next()'); await sleep(700);
+await evalJs(c, "Reveal.next()");
+await sleep(700);
+await evalJs(c, "Reveal.next()");
+await sleep(700);
 const f2 = await evalJs(c, `Reveal.getCurrentSlide().querySelectorAll('.fragment.visible').length`);
 if (!(f0 === 0 && f2 === 2)) fail(`fragments: before=${f0} after=${f2} (want 0=>2)`);
-else console.log('fragments: 0 => 2 ✓');
+else console.log("fragments: 0 => 2 ✓");
 
 for (let i = 0; i < n; i++) {
   await evalJs(c, `Reveal.slide(${coords[i].h}, ${coords[i].v})`);
   await sleep(1100);
-  const m = await evalJs(c, `(() => {
+  const m = await evalJs(
+    c,
+    `(() => {
     const s = Reveal.getCurrentSlide();
     const h = s.querySelector('h1,h2');
     return {
@@ -85,35 +114,65 @@ for (let i = 0; i < n; i++) {
       ow: s.scrollWidth - s.clientWidth, oh: s.scrollHeight - s.clientHeight,
       frags: s.querySelectorAll('.fragment').length
     };
-  })()`);
+  })()`,
+  );
   if (m.ow > 1 || m.oh > 1) fail(`slide ${i} "${m.head}" overflow w:${m.ow} h:${m.oh}`);
-  const shot = await c.send('Page.captureScreenshot', { format: 'png' });
-  writeFileSync(`out/png/slide-${String(i).padStart(2, '0')}.png`, Buffer.from(shot.data, 'base64'));
+  const shot = await c.send("Page.captureScreenshot", { format: "png" });
+  writeFileSync(`out/png/slide-${String(i).padStart(2, "0")}.png`, Buffer.from(shot.data, "base64"));
 }
-console.log('overflow + screenshots: done');
+console.log("overflow + screenshots: done");
 
 // -- print view -----------------------------------------------------
-await c.send('Page.navigate', { url: `${BASE}/?print-pdf#/` });
+await c.send("Page.navigate", { url: `${BASE}/?print-pdf#/` });
 await sleep(2500);
-const p = await evalJs(c, `(() => {
+const p = await evalJs(
+  c,
+  `(() => {
   const pages = [...document.querySelectorAll('.pdf-page > section')];
   const tall = pages.filter(s => s.scrollHeight > 721).length;
   const inlineTop = pages.filter(s => s.style.top && s.style.top !== '0px').length;
   return { pages: pages.length, tall, inlineTop };
-})()`);
-console.log('print view:', JSON.stringify(p));
+})()`,
+);
+console.log("print view:", JSON.stringify(p));
 if (p.pages !== n) fail(`print pages ${p.pages} != slides ${n}`);
 if (p.tall) fail(`${p.tall} print pages overflow 720px`);
 if (p.inlineTop) fail(`${p.inlineTop} print pages carry a stamped inline top`);
 
 // -- real PDF -------------------------------------------------------
-const pdf = await c.send('Page.printToPDF', { preferCSSPageSize: true, printBackground: true });
-const buf = Buffer.from(pdf.data, 'base64');
-writeFileSync('out/deck.pdf', buf);
-const s = buf.toString('latin1');
+// Chrome exports A4 landscape. Obscura verifies the native 16:9 canvas;
+// its CDP implementation does not reliably honor scale/page-break controls.
+const pdf = await c.send(
+  "Page.printToPDF",
+  process.env.OBSCURA
+    ? {
+        preferCSSPageSize: false,
+        printBackground: true,
+        paperWidth: 1280 / 96 + 0.01,
+        paperHeight: 720 / 96 + 0.01,
+        marginTop: 0,
+        marginRight: 0,
+        marginBottom: 0,
+        marginLeft: 0,
+      }
+    : {
+        preferCSSPageSize: false,
+        printBackground: true,
+        paperWidth: 297 / 25.4,
+        paperHeight: 210 / 25.4,
+        marginTop: 10 / 25.4,
+        marginRight: 0,
+        marginBottom: 10 / 25.4,
+        marginLeft: 0,
+        scale: 0.875,
+      },
+);
+const buf = Buffer.from(pdf.data, "base64");
+writeFileSync("out/deck.pdf", buf);
+const s = buf.toString("latin1");
 const mediaBoxes = (s.match(/\/MediaBox/g) ?? []).length;
-console.log(`pdf: ${(buf.length / 1024).toFixed(0)}KB, MediaBox count ${mediaBoxes}`);
+console.log(`pdf: ${(buf.length / 1024).toFixed(0)}KB, ${process.env.OBSCURA ? "16:9" : "A4 landscape"} MediaBox count ${mediaBoxes}`);
 if (mediaBoxes !== n) fail(`PDF pages ${mediaBoxes} != slides ${n}`);
 
-console.log(fails.length ? `\n${fails.length} FAILURE(S)` : '\nALL PASS');
+console.log(fails.length ? `\n${fails.length} FAILURE(S)` : "\nALL PASS");
 process.exit(fails.length ? 1 : 0);
