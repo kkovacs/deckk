@@ -10,7 +10,7 @@ Fixed 1280×720 canvas, no build step, no package.json, zero custom JS, fully st
 
 I wanted to be able to tell [Zulu Six](https://github.com/kkovacs/kkrc/blob/master/inject-ai-kk.md) to bootstrap presentations in my style, that I can fine-tune manually (= it has a good structure).
 
-- **Serve**: `bun run serve.ts` — the deck at `/` (`template.html`), the one-slide starter for new decks at `/index.html`. Any static webserver works too (plain ones serve `index.html` at `/`).
+- **Serve**: `bun run serve.ts` — one-slide starter (`index.html`) at `/`, deck (`template.html`) at `/template.html`; any static webserver gives the same URLs
 - **Present**: Usual reveal.js controls: arrows / hash URLs (`#/<section>/<slide>`); `class="fragment"` on any element makes it appear on click; **S** opens the speaker-notes view (`<aside class="notes">` in any slide)
 - **Print/PDF**: Add `?print-pdf` to the URL and print to PDF (A4 landscape, one proportional 16:9 slide per page, all fragments shown, clickable source URLs)
 - **Human's** instructions: read the cheat-sheet at the top of `template.html`.

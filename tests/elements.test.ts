@@ -17,7 +17,7 @@ test("element-audit stack: contrast, bounds, focus, print, PDF", async () => {
   const c = await attach();
   await c.send("Page.enable");
   await c.send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
-  await goto(c, `${BASE}/`);
+  await goto(c, `${BASE}/template.html`);
 
   // The audit stack is the LAST top-level group; slide() takes stack coords.
   const auditH = await c.evalJs(`document.querySelectorAll('.slides > section').length - 1`);
@@ -109,7 +109,7 @@ test("element-audit stack: contrast, bounds, focus, print, PDF", async () => {
   // asserted for the audit's share of the pages.
   await goto(
     c,
-    `${BASE}/?print-pdf#/`,
+    `${BASE}/template.html?print-pdf#/`,
     `document.querySelectorAll('.pdf-page > section').length === ${SLIDES_TOTAL}`,
   );
   await sleep(500);

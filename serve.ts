@@ -14,9 +14,10 @@ const server = Bun.serve({
   port,
   async fetch(req) {
     const path = new URL(req.url).pathname;
-    // "/" => template.html; everything else resolved under root; no traversal
-    // cleanup needed (Bun.file rejects paths outside cwd patterns - XXX: revisit if deck is exposed publicly)
-    const rel = path === '/' ? 'template.html' : path.slice(1);
+    // "/" => the starter (index.html); the deck lives at /template.html - same
+    // URLs any static webserver gives. No traversal cleanup needed
+    // (Bun.file rejects paths outside cwd patterns - XXX: revisit if deck is exposed publicly)
+    const rel = path === '/' ? 'index.html' : path.slice(1);
     const file = Bun.file(root + rel);
     if (!(await file.exists())) return new Response('404', { status: 404 });
     return new Response(file);

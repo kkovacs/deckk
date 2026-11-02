@@ -10,7 +10,7 @@ const c = await attach();
 await c.send('Page.enable');
 await c.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
 // Wait for the refill (PDF pages) AND for reveal to finish stamping
-await goto(c, `${BASE}/?print-pdf#/`, `window.Reveal?.isReady() && document.querySelectorAll('.pdf-page > section').length`);
+await goto(c, `${BASE}/template.html?print-pdf#/`, `window.Reveal?.isReady() && document.querySelectorAll('.pdf-page > section').length`);
 await sleep(2500);
 
 for (const idx of process.argv.slice(2)) {

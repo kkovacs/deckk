@@ -21,7 +21,7 @@ test("deck probe: structure, overflow, fragments, print, PDF", async () => {
   const c = await attach();
   await c.send("Page.enable");
   await c.send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
-  await goto(c, `${BASE}/`);
+  await goto(c, `${BASE}/template.html`);
 
   const n = await c.evalJs("Reveal.getSlides().length");
   console.log(`slides: ${n}`);
@@ -80,7 +80,7 @@ test("deck probe: structure, overflow, fragments, print, PDF", async () => {
 
   // -- print view -----------------------------------------------------
   // Until is a truthy page count so goto() polls the refill, not the clock.
-  await goto(c, `${BASE}/?print-pdf#/`, `document.querySelectorAll('.pdf-page > section').length`);
+  await goto(c, `${BASE}/template.html?print-pdf#/`, `document.querySelectorAll('.pdf-page > section').length`);
   await sleep(500);
   const p = await c.evalJs(
     `(() => {
