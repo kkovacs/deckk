@@ -1,25 +1,25 @@
 # AGENTS.md - deckk (KK's deck)
 
-Zero-dependency reveal.js presentation deck (pinned release, see **Updating vendored files**). The deck IS the documentation: a capability showcase (~32 slides) in four sections - 01 mechanisms (system behaviors), 02 every block full-width, 03+04 the working pairs (reading / pictures & code) - plus a closing dark 2-col thank-you. `bun run serve.ts` serves it (default `:8000`, `PORT` env overrides). No package.json; nothing to install.
+Zero-dependency reveal.js presentation deck (pinned release, see **Updating vendored files**). The deck IS the documentation: a capability showcase (~32 slides) in four sections - 01 mechanisms (system behaviors), 02 every block full-width, 03+04 the working pairs (reading / pictures & code) - plus a closing dark 2-col thank-you, then the merged 11-slide HTML element-audit stack (the former `tests/elements.html`). `bun test` verifies it all; `bun run serve.ts` serves it (default `:8000`, `PORT` env overrides). No package.json; nothing to install.
 
 `tests/` holds the verification suite; `out/` holds its outputs (screenshots, exported PDF). `assets/` holds real images (tall.jpg / wide.jpg are deliberate wrong-shape test assets).
 
 ## Authoring a new deck from these templates (the clone-and-go flow)
 
-1. Read the cheat-sheet comment at the top of `index.html` - the complete authoring spec. The deck's own slides double as templates: copy the nearest skeleton (full-width, pair, feature block, code slab...) and replace its content.
-2. Keep the skeleton around the content: cover + agenda up front, one stack `<section>` per topic with its `.dark divider`, the closing thank-you stack (classic closer with the 2-col variant nested under it). **Exactly 6 top-level groups** (asserted by the probe).
-3. If the section count changed, update BOTH expected constants in `tests/probe.mjs` (slide count, top-level group count).
-4. Run `bun tests/probe.mjs` (setup: probe protocol below); eyeball the densest slides in `out/png/`.
+1. Read the cheat-sheet comment at the top of `template.html` - the complete authoring spec. The deck's own slides double as templates: copy the nearest skeleton (full-width, pair, feature block, code slab...) and replace its content.
+2. Keep the skeleton around the content: cover + agenda up front, one stack `<section>` per topic with its `.dark divider`, the closing thank-you stack (classic closer with the 2-col variant nested under it), and the element-audit stack last. **Exactly 7 top-level groups** (asserted by the probe).
+3. If the section count changed, update BOTH expected constants in `tests/probe.test.ts` (slide count, top-level group count).
+4. Run `bun test` (setup: probe protocol below); eyeball the densest slides in `out/png/`.
 
 ## Architecture
 
-- `index.html` - all slides inline; the cheat-sheet comment at the top is the **authoritative authoring spec** (keep it in sync with `theme.css`). **Zero custom JS**: the only script imports vendored reveal + the official notes plugin and calls `Reveal.initialize` once; `window.Reveal` is exposed for probing. The config is load-bearing - see the `center:false` landmine.
+- `template.html` - all slides inline; the cheat-sheet comment at the top is the **authoritative authoring spec** (keep it in sync with `theme.css`). **Zero custom JS**: the only script imports vendored reveal + the official notes plugin and calls `Reveal.initialize` once; `window.Reveal` is exposed for probing. The config is load-bearing - see the `center:false` landmine.
 - `theme.css` - the design + the composition system (rationale below). Applies `font-family`/`color` directly to elements - declaring CSS variables alone leaves text at browser-default black Times on dark slides (bitten twice; the pixel probe catches it).
-- `vendor/` - reveal, pinned release, vendored from jsDelivr: `reveal.esm.js`, `reveal.css`, `notes.esm.js` - all self-contained (flat, no plugin subdir; the notes plugin import in `index.html` points at `./vendor/notes.esm.js`). To bump, see **Updating vendored files** below. **Re-verify every landmine below against the new source + live probes** (this doc's landmines were re-verified that way once already; don't cargo-cult them either way).
+- `vendor/` - reveal, pinned release, vendored from jsDelivr: `reveal.esm.js`, `reveal.css`, `notes.esm.js` - all self-contained (flat, no plugin subdir; the notes plugin import in `template.html` points at `./vendor/notes.esm.js`). To bump, see **Updating vendored files** below. **Re-verify every landmine below against the new source + live probes** (this doc's landmines were re-verified that way once already; don't cargo-cult them either way).
 - `assets/` - real images; an EMPTY `<figure>` still renders the pure-CSS placeholder until an `<img>` lands inside it.
-- Autoformatting: `bun x prettier --write --print-width 140 index.html theme.css` - the `--print-width 140` flag is load-bearing: at the default 80, Prettier re-folds long lines and mid-tag wraps them (`></span` dangles). Tables are compact one-line rows and exempt via `<!-- prettier-ignore -->`. Run the probe suite after reformatting.
+- Autoformatting: `bun x prettier --write --print-width 140 template.html theme.css` - the `--print-width 140` flag is load-bearing: at the default 80, Prettier re-folds long lines and mid-tag wraps them (`></span` dangles). Tables are compact one-line rows and exempt via `<!-- prettier-ignore -->`. Run the probe suite after reformatting.
 
-## Design rationale (the WHY; the cheat-sheet in index.html is the WHAT)
+## Design rationale (the WHY; the cheat-sheet in template.html is the WHAT)
 
 - **Geometry comes from markup shape, not markup instructions** - the SECTION counts its `.body` children (1 => full width, 2 => halves); `.body` is the only sanctioned wrapper - ONE COLUMN of gap-spaced panels; classes never carry layout. This is what makes content slides interchangeable skeletons - and the deck clone-friendly.
 - **Typography is keyed to the slot** (`.body > :where(...)`, specificity 0) so tag swaps are visual no-ops and stray content classes cannot override the system. Component inner roles are position-derived (e.g. `.stats > div`'s first child is the number) - components are authored as bare divs/spans with zero inner classes.
@@ -65,21 +65,22 @@ After downloading:
 1. Sanity-check against the CDN: `cmp <(curl -fsSL <url>) vendor/<file>` for each - they must be byte-identical to the pinned release. Don't panic if the `/*! reveal.js ... */` banner inside `reveal.esm.js` reads one version behind: upstream's version string can lag; the `cmp` above is the source of truth.
 2. `grep -n "^import\|from "` the JS files - they must stay import-free (or only self-referencing); the deck ships zero deps beyond these files.
 2. Re-verify every **Landmine** against the new source - especially `center:false` inline-top stamping, the print-refill specificity race, and `.pdf-page` height (bitten before; re-probed during the one bump so far).
-3. Live-verify with the probe suite (protocol below): `HOST=0.0.0.0 PORT=8000 bun serve.ts` + `bun tests/probe.mjs`, then eyeball `out/png/`.
+3. Live-verify with the probe suite (protocol below): `HOST=0.0.0.0 PORT=8000 bun serve.ts` + `bun test`, then eyeball `out/png/`.
 
-## Probe protocol (headless Chrome via docker)
+## Probe protocol (obscura, its bundled headless browser)
 
 ```
-docker container run -d --name hless --add-host host.docker.internal:host-gateway -p 9222:9222 chromedp/headless-shell:latest
+obscura serve --allow-private-network   # CDP at ws://127.0.0.1:9222/devtools/browser
 ```
 
-Verify CDP with `curl -fsS http://127.0.0.1:9222/json/version`. Raw CDP over WebSocket from bun scripts (no deps). **`tests/probe.mjs` is the verification suite, run from the repo root** (`bun tests/probe.mjs`, under `timeout`): slide count, structural group check (exactly 6 top-level `.slides > section` - front stack + 4 section stacks + the closing thank-you stack), per-slide overflow + screenshots to `out/png/`, fragment advance, print-view DOM geometry (page count, tall pages, stamped inline tops), real PDF via `Page.printToPDF` + MediaBox count. **Update the expected slide count when slides change.** `tests/shot.mjs <flat-idx>...` captures individual print-view pages. Gotchas, each learned the hard way:
+Obscura implements CDP through explicit browser target sessions: attach to `/devtools/browser` (ws://), then `Target.createTarget` + `Target.attachToTarget` with `flatten: true` - the `/json/*` HTTP endpoints are intentionally unsupported. `--allow-private-network` is required to reach the local serve.ts (obscura blocks loopback/RFC1918 by default). Raw CDP over WebSocket from bun scripts (no deps). **`tests/` is the verification suite, run from the repo root** (`bun test`, under `timeout`): `tests/probe.test.ts` checks slide count, structural group check (exactly 7 top-level `.slides > section` - front stack + 4 section stacks + the closing thank-you stack + the merged element-audit stack), per-slide overflow + screenshots to `out/png/`, fragment advance, print-view DOM geometry (page count, tall pages, stamped inline tops), real PDF via `Page.printToPDF` + MediaBox count; `tests/elements.test.ts` audits the element-audit stack (contrast, canvas bounds, keyboard focus, screenshots + PDF to `out/elements/`). **Update the expected slide/group constants in both suites when slides change.** `tests/shot.mjs <flat-idx>...` captures individual print-view pages. Gotchas, each learned the hard way:
 
-- Reach the deck at `http://host.docker.internal:<PORT>/`, never `localhost`.
+- Reach the deck at `http://127.0.0.1:<PORT>/` (obscura runs locally; give it `--allow-private-network` so loopback is reachable).
 - Navigate once per view (hash changes never fire `load`); move between slides with `Reveal.slide(h, v)` + ~1.2s settle before screenshots. **`slide()` takes stack coords, NOT flat indices** - build an `(h, v)` map from `.slides > section` children (flat indices silently navigate the wrong slides; bitten once).
 - **Test fragments FIRST, on a fresh load** - revisiting a slide leaves its fragments revealed (reveal quirk, not a bug).
 - `Reveal.next()` walks PAST the current slide once its fragments are exhausted - to advance fragments on a specific slide use `Reveal.nextFragment()` and confirm with `Reveal.getIndices()` (bitten once: measured the wrong slide and got plausible-looking numbers).
-- CDP element-**clip** screenshots beyond the viewport are unreliable in headless-shell - `scrollIntoView()` + settle + a plain full-viewport capture instead.
+- CDP element-**clip** screenshots beyond the viewport are unreliable - `scrollIntoView()` + settle + a plain full-viewport capture instead.
+- Obscura's CDP does not reliably honor scale/page-break print controls - export at the native 16:9 canvas (paper = 1280/96 × 720/96 inches, zero margins) instead of A4 landscape.
 - Fresh tab per probe (no cache headers); find slides by heading text, not hardcoded indices. Quote/statement slides carry no h1/h2, so flat indices drift from heading counts - don't map headings to `out/png/slide-N.png` naively.
 - Slide backgrounds paint on the `.slide-background` element itself, not its `.slide-background-content` child - probe the parent.
 - PNGs are served by serve.ts from the repo root, so in-page canvas sampling works for pixel checks.
