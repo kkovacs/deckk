@@ -560,7 +560,6 @@
   width: 100%;
   object-fit: cover; /* DEFAULT: fill + crop the overflow axis.
                                  class="nocrop" flips to contain */
-  border: 1px solid var(--hairline);
   box-sizing: border-box;
 }
 .reveal .body figure figcaption {
@@ -574,7 +573,6 @@
    Later source order beats the default rule. */
 .reveal .body img.nocrop {
   object-fit: contain;
-  border: 0;
 }
 
 /* An EMPTY figure is the placeholder - pure CSS, no class, no JS.
