@@ -574,6 +574,7 @@
    Later source order beats the default rule. */
 .reveal .body img.nocrop {
   object-fit: contain;
+  border: 0;
 }
 
 /* An EMPTY figure is the placeholder - pure CSS, no class, no JS.
