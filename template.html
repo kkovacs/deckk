@@ -96,9 +96,9 @@
   one-off (inline SVG or a styled <table>) when actually needed.
 
   VERIFICATION: the element-audit stack at the end of this file is an
-  11-slide semantic-HTML matrix. With serve.ts + obscura, `bun test`
-  (tests/elements.test.ts) checks contrast, canvas bounds, keyboard
-  focus, screenshots, and 16:9 print/PDF.
+  11-slide semantic-HTML matrix. The self-contained probe suite (`bun test`)
+  starts its own webserver + obscura and checks contrast, canvas bounds,
+  keyboard focus, screenshots, and 16:9 print/PDF.
 -->
 
         <!-- Front matter: Cover, then Agenda.
@@ -766,7 +766,7 @@ def total(cart):
 
         <!-- == 05 - Verification fixture: the semantic-HTML element audit.
            Merged from the former tests/elements.html - it is a regular
-           stack, probed by tests/elements.test.ts. == -->
+           stack, probed by the self-contained bun test suite. == -->
         <section>
           <section class="dark cover" data-background-gradient="var(--grad-navy)">
             <p class="kicker">Verification fixture</p>
