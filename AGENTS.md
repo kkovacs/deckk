@@ -9,11 +9,12 @@ Zero-dependency reveal.js presentation deck (pinned release, see **Updating vend
 1. Read the cheat-sheet comment at the top of `template.html` - the complete authoring spec. The deck's own slides double as templates: copy the nearest skeleton (full-width, pair, feature block, code slab...) and replace its content.
 2. When creating a **real** presentation (as opposed to working on the templates), you **must not** update the tests - the tests are for when working on **the template**. Working on the template, and creating presentations from it are **two very different work modes**, you are only in one of them at once.
 3. If you have the tools, use browser screenshots to check the slides you are working on, check for overlaps, content being off the screen, other style mistakes, etc.
-4. If you need to write custom CSS, put it into index.html – **do not** edit the template. That way we can `git pull` template updates into an existing presentation.
+4. Work mainly from the given CSS. If you need to write custom CSS, **do not** edit the template: put it in `index.html` or a `custom.css`. That way we can `git pull` template updates into an existing presentation.
+5. When working on a presentation (not the template), you **are allowed** to use JS. Put it in `index.html` or in a `custom.js`.
 
 ## Architecture
 
-- `template.html` - all slides inline; the cheat-sheet comment at the top is the **authoritative authoring spec** (keep it in sync with `theme.css`). **Zero custom JS**: the only script imports vendored reveal + the official notes plugin and calls `Reveal.initialize` once; `window.Reveal` is exposed for probing. The config is load-bearing - see the `center:false` landmine.
+- `template.html` - all slides inline; the cheat-sheet comment at the top is the **authoritative authoring spec** (keep it in sync with `theme.css`). The only script imports vendored reveal + the official notes plugin and calls `Reveal.initialize` once; `window.Reveal` is exposed for probing. The config is load-bearing - see the `center:false` landmine.
 - `index.html` - the minimal one-slide starter for the clone-and-go flow: same head + reveal config as `template.html`, cover points to it, served at `/`. The probe suite navigates `/template.html` directly.
 - `serve.ts` - zero-dep static server (`bun stdlib only`); `startServer({hostname, port, dir})` is exported so the probe suite can self-host on an ephemeral port. CLI: starter at `/`, deck at `/template.html`, loopback by default (`HOST`/`PORT` env override).
 - `theme.css` - the design + the composition system (rationale below). Applies `font-family`/`color` directly to elements - declaring CSS variables alone leaves text at browser-default black Times on dark slides (bitten twice; the pixel probe catches it).
