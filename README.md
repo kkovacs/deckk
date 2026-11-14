@@ -2,13 +2,13 @@
 
 Zero-dependency reveal.js deck _template_, primarily for my personal use.
 
-**See demo at:** <https://kkovacs.github.io/deckk/>
+I want to work with AI on presentations in **my style**: I do the content, while the AI handles the drudgery.
 
-It is a kind of **construction kit**, that defines **components** that I can combine in **full-width** or **2-column** configurations. That's how I like to work.
+**See demo at:** <https://kkovacs.github.io/deckk/template.html>
+
+It is a kind of **construction kit**, that defines **components** that I can combine in **full-width** or **2-column** configurations. (My style is many relatively fast-moving slides, instead of walls of text.)
 
 Fixed 1280×720 canvas, no build step, no package.json, zero custom JS, fully stock [reveal.js](https://revealjs.com/) + the official notes plugin only.
-
-I wanted to be able to tell [Zulu Six](https://github.com/kkovacs/kkrc/blob/master/inject-ai-kk.md) to bootstrap presentations in my style, that I can fine-tune manually (= it has a good structure).
 
 - **Serve**: `bun run serve.ts` — one-slide starter (`index.html`) at `/`, deck (`template.html`) at `/template.html`; any static webserver gives the same URLs
 - **Present**: Usual reveal.js controls: arrows / hash URLs (`#/<section>/<slide>`); `class="fragment"` on any element makes it appear on click; **S** opens the speaker-notes view (`<aside class="notes">` in any slide)
