@@ -48,5 +48,29 @@
 
       window.Reveal = Reveal; // exposed for headless probing / console tinkering
     </script>
+    <script type="module">
+      /* Presentation-specific JS goes here - feel free. The template itself ships
+         zero custom JS, so keep it in this block and `git pull` stays painless.
+         (type=module on purpose: it runs AFTER the init script above, so
+         window.Reveal exists; a classic <script> would run before it.)
+
+         Example - restart CSS animations whenever a slide is entered, so a loop
+         always starts from frame 0 (deep links and revisits included):
+
+      const restart = () => {
+        const slide = Reveal.getCurrentSlide();
+        for (const a of slide?.getAnimations({ subtree: true }) ?? []) {
+          a.currentTime = 0;
+          a.play();
+        }
+      };
+      Reveal.on("ready", restart);
+      Reveal.on("slidechanged", restart);
+
+         Note: animations inside an <img src="x.svg"> live in their own document
+         and are unreachable from here - reload the image instead, e.g.
+         img.src = "assets/x.svg?r=" + Date.now().
+      */
+    </script>
   </body>
 </html>
