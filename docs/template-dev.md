@@ -2,6 +2,7 @@
 
 Only read this when changing `template.html`, `theme.css`, `vendor/` or the tests. Authoring a deck? Stop; see `AGENTS.md`.
 
+- `bun test` verifies the template and the tools (`tests/slides.test.ts` covers `tools/slides.ts` on inline fixtures). It never tests `index.html` - that is a presentation.
 - Keep the cheat-sheet comment atop `template.html` in sync with `theme.css`.
 - When slides change, update the expected constants atop `tests/probe.test.ts` (`SLIDES_TOTAL`, `GROUPS`, `AUDIT_SLIDES`).
 - Format: `bun x prettier --write --print-width 140 template.html theme.css` (140 is load-bearing; tables are exempt via `<!-- prettier-ignore -->`). Then `bun test`.
