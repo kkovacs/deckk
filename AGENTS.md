@@ -1,100 +1,77 @@
 # AGENTS.md - deckk (KK's deck)
 
-Zero-dependency reveal.js presentation deck (pinned release, see **Updating vendored files**). The deck IS the documentation: a capability showcase in four sections - 01 mechanisms (system behaviors), 02 every block full-width, 03+04 the working pairs (reading / pictures & code) - plus a closing dark 2-col thank-you, then the merged HTML element-audit stack (the former `tests/elements.html`). `bun test` verifies it all - the suite is self-contained: it serves the deck itself and runs its own obscura headless browser (ephemeral ports). `bun run serve.ts` (default `:8000`, `HOST`/`PORT` env override) serves the starter `index.html` at `/` and the deck `template.html` at `/template.html` - the URLs any static webserver gives. No package.json; nothing to install.
+Zero-dependency reveal.js deck (6.0.2, vendored). The deck IS the documentation: `template.html` is a capability showcase (01 mechanisms, 02 every block full-width, 03+04 working pairs, closing dark thank-you, element-audit stack). `index.html` is the one-slide starter served at `/`. No package.json; nothing to install.
 
-`tests/` holds the verification suite; `out/` holds its outputs (screenshots, exported PDF). `assets/` holds real images (tall.jpg / wide.jpg are deliberate wrong-shape test assets).
+- `bun run serve.ts` - serves on `:8000` (`HOST`/`PORT` override): starter at `/`, deck at `/template.html`.
+- `bun test` - self-contained suite (own server + own obscura headless browser, ephemeral ports). It verifies `template.html` ONLY, never a presentation. `out/` holds screenshots and PDFs.
+- `bun tools/shot.ts [file.html] <slide>...` - render slides to `out/shot/` PNGs and report overflow, off-canvas elements and overlapping text. `--at 0,1500,6000` = several frames per slide (animations), `--frags N` = press fragment-next first, slide `all` = whole deck.
+- `bun tools/slides.ts [file.html]` - print every slide's hash, source line, id and heading.
+- `assets/` - real images; `tall.jpg`/`wide.jpg` are deliberate wrong-shape test assets. A `<figure>` with no child elements renders the CSS placeholder until something lands inside.
+- Format (template work only): `bun x prettier --write --print-width 140 template.html theme.css` (140 is load-bearing; tables are exempt via `<!-- prettier-ignore -->`). **Never** run prettier on a presentation's `index.html`. Re-run tests after.
 
-## Authoring a new deck from these templates (the clone-and-go flow)
+## Two work modes (you are in only one)
 
-1. Read the cheat-sheet comment at the top of `template.html` - the complete authoring spec. The deck's own slides double as templates: copy the nearest skeleton (full-width, pair, feature block, code slab...) and replace its content.
-2. When creating a **real** presentation (as opposed to working on the templates), you **must not** update the tests - the tests are for when working on **the template**. Working on the template, and creating presentations from it are **two very different work modes**, you are only in one of them at once.
-3. **Look at what you change.** After any edit that adds text or changes a slide's shape, render that slide and check it - overflow, overlap, content off the canvas, style slips; "I haven't rendered it" is not a finished edit. `bun tools/shot.ts [file.html] <slide>...` does it in one command (self-contained: own webserver + own obscura, ~2s): it writes a PNG per slide to `out/shot/` (open it) and reports overflow, elements outside the 1280x720 canvas and overlapping text boxes. `--at 0,1500,6000` takes several frames per slide (animations: wall-clock frames are the ground truth), `--frags N` presses fragment-next first, slide `all` shoots the whole deck. `bun test` does NOT check a presentation - it only verifies `template.html`.
-4. Work mainly from the given CSS. If you need to write custom CSS, **do not** edit the template: put it in `index.html` or a `custom.css`. That way we can `git pull` template updates into an existing presentation.
-5. When working on a presentation (not the template), you **are allowed** to use JS. Put it in `index.html` or in a `custom.js`.
-6. **Address slides by id, not by number.** Give a slide `<section id="...">` and refer to it as `#/id`; plain `#/N` is reveal's **0-based** top-level index (`#/h/v` inside stacks) and shifts whenever a slide is inserted, so never write numbers in comments. `bun tools/slides.ts [file.html]` prints every slide's hash, source line, id and heading - use it instead of grepping for `<section`, and when the user says `#/N` map it through that list. Edit with the Edit tool, never by line number (`sed -i 'NNNs...'` clobbered a neighbouring block).
-7. In a presentation: put the user's text in verbatim - don't invent or research content unless asked; no print CSS unless asked; and **never run prettier on `index.html`** (the autoformat rule below is for `template.html`/`theme.css`; it re-wrapped hand-packed deck CSS into +2700 lines of churn).
-8. Environment: `obscura` may be on bun's `PATH` only - check with `Bun.which("obscura")`, not `command -v` (`tools/shot.ts` and the suite already do); `$TMPDIR` may be unset, so write scratch files to an explicit path.
+**Authoring a real presentation** (clone-and-go):
+1. Read the cheat-sheet comment atop `template.html` - the authoritative authoring spec. Copy the nearest slide skeleton and replace its content.
+2. Do **not** touch the tests.
+3. Custom CSS goes in `index.html` or `custom.css`, custom JS in `index.html` or `custom.js` - never edit the template, so template updates can be `git pull`ed.
+4. **Look at what you change**: after any edit that adds text or changes a slide's shape, render it with `tools/shot.ts` and open the PNG. An unrendered edit is not finished.
+5. **Address slides by id**: give a slide `<section id="...">` and refer to it as `#/id`. Plain `#/N` is 0-based, shifts on insertion, and must never appear in comments; when the user says `#/N`, map it via `tools/slides.ts`. Edit with the Edit tool, never by line number.
+6. Put the user's text in verbatim; don't invent or research content, and no print CSS, unless asked.
 
-## Architecture
+**Working on the template:** keep the cheat-sheet in sync with `theme.css`, and update the expected constants atop `tests/probe.test.ts` when slides change.
 
-- `template.html` - all slides inline; the cheat-sheet comment at the top is the **authoritative authoring spec** (keep it in sync with `theme.css`). The only script imports vendored reveal + the official notes plugin and calls `Reveal.initialize` once; `window.Reveal` is exposed for probing. The config is load-bearing - see the `center:false` landmine.
-- `index.html` - the minimal one-slide starter for the clone-and-go flow: same head + reveal config as `template.html`, cover points to it, served at `/`. The probe suite navigates `/template.html` directly.
-- `tools/shot.ts`, `tools/slides.ts` - the authoring tools (see the clone-and-go flow above): screenshot + layout report, and the slide outline. Both zero-dep bun scripts, usable on `index.html` and `template.html` alike; `shot.ts` shares the CDP/obscura plumbing with the suite via `tests/lib.ts`.
-- `serve.ts` - zero-dep static server (`bun stdlib only`); `startServer({hostname, port, dir})` is exported so the probe suite can self-host on an ephemeral port. CLI: starter at `/`, deck at `/template.html`, loopback by default (`HOST`/`PORT` env override).
-- `theme.css` - the design + the composition system (rationale below). Applies `font-family`/`color` directly to elements - declaring CSS variables alone leaves text at browser-default black Times on dark slides (bitten twice; the pixel probe catches it).
-- `vendor/` - reveal 6.0.2 (pinned; `cmp` against the CDN is the truth; the 5.x banner used to lag, 6.x has no banner), vendored from jsDelivr: `reveal.esm.js`, `reveal.css`, `notes.esm.js` - all self-contained (flat, no plugin subdir; the notes plugin import in `template.html` points at `./vendor/notes.esm.js`). To bump, see **Updating vendored files** below. **Re-verify every landmine below against the new source + live probes** (this doc's landmines were re-verified that way once already; don't cargo-cult them either way).
-- `assets/` - real images; a `<figure>` with NO child elements still renders the pure-CSS placeholder until any element (an `<img>`, an `<svg>`, a div diagram) lands inside it.
-- Autoformatting (template work only - never on a presentation's `index.html`): `bun x prettier --write --print-width 140 template.html theme.css` - the `--print-width 140` flag is load-bearing: at the default 80, Prettier re-folds long lines and mid-tag wraps them (`></span` dangles). Tables are compact one-line rows and exempt via `<!-- prettier-ignore -->`. Run the probe suite after reformatting.
+## Design principles
 
-## Design rationale (the WHY; the cheat-sheet in template.html is the WHAT)
+- **Geometry from markup shape**: a section counts its `.body` children (1 = full width, 2 = halves). `.body` is the only sanctioned wrapper; panels are never direct section children. Classes never carry layout.
+- **Typography keyed to the slot** (`.body > :where(...)`, specificity 0); component inner roles are position-derived, so components are bare divs/spans with no inner classes.
+- **Self-sizing by construction** (lists, stats, steps, tables, images). Authors never set sizes. The type scale is ONE knob: `.reveal` `font-size`, everything else is em-based. Dense slides overflow first: trim copy or tighten rhythm, never hand-set font-sizes.
+- **Native mechanisms only**: fragments, gradients, notes, `?print-pdf`. No custom JS in the template.
+- **Unsupported on purpose**: charts (use inline SVG/tables), weighted splits.
+- Fixed 1280x720 canvas, no auto-fit: overfull slides silently clip. Tests catch out-of-canvas overflow, **not** intra-slide overlap - look at the render.
 
-- **Geometry comes from markup shape, not markup instructions** - the SECTION counts its `.body` children (1 => full width, 2 => halves); `.body` is the only sanctioned wrapper - ONE COLUMN of gap-spaced panels; classes never carry layout. This is what makes content slides interchangeable skeletons - and the deck clone-friendly.
-- **Typography is keyed to the slot** (`.body > :where(...)`, specificity 0) so tag swaps are visual no-ops and stray content classes cannot override the system. Component inner roles are position-derived (e.g. `.stats > div`'s first child is the number) - components are authored as bare divs/spans with zero inner classes.
-- **Three voices**: sans (body), serif (display/quote), `--mono` (code). `theme.css` applies font-family/color directly to elements - variables alone leave text at browser defaults (see landmines).
-- **Self-sizing is enforced by construction**: lists shrink by item count, stats at 4+, stats/steps wrap two-per-row in a HALF (container queries against the slot's own size container), tables compact by width, images fill-or-letterbox their layout-decided box. The author never sets a size.
-- **The type scale is ONE knob** - `.reveal`'s `font-size`; every size and rhythm in the deck is em-based off it, so rescaling is a one-line edit (the deck ships enlarged ~+20% from the original design size for legibility). The fixed canvas is the constraint: the enlarged type was paid for by tightening the vertical rhythm (list item margins, steps gap/padding), and dense feature blocks overflow first - pay with rhythm or trimmed copy, never with hand-set font-sizes.
-- **Bullets are unbreakable by construction**: `list-style` is dead deck-wide; markers are positioned `li::before` flex boxes, depth picks the glyph - nothing markup-side can move them. Traps: `::before` with `content:''` + `width:auto` collapses to 0 wide; text-marker rules must NOT set a smaller font-size (their 1.5em box must match the line box); sized pseudo-elements need `display:block` (inline pseudos ignore width/height - timeline dots vanished once).
-- **Native mechanisms only**: fragments, gradients, speaker notes, `?print-pdf` are all reveal/CSS - never custom JS.
-- **Deliberately unsupported** (user decision): charts (build one-offs as inline SVG / styled tables when needed), weighted splits. 
+## Landmines
 
-## Landmines (verified against the pinned reveal source + live probes)
+Format: trap -> rule.
 
-- **The display landmine**: reveal keeps slides rendered by stamping *inline* `display:block`, which persists past the class flip - that IS the fade mechanism (the outgoing slide stays rendered). Inline style beats any class rule, so the flex scaffold needs `.reveal .slides section { display: flex !important }` - scoped to ALL slides, because visited nested slides can sit with **no state class at all**. Without it, the outgoing slide re-flows to block layout mid-transition (the visible "jump before the transition").
-- **`center: false` in the config** - reveal's default vertical centering stamps an inline `top` on every slide that persists into the PDF and pushes pages half a page down. `center:false` makes reveal write `top:""` instead, so the print refill needs no `top:0!important`.
-- **Print refill**: vendor CSS (`html.reveal-print ...section{padding:0!important; display:block!important}`) strips the scaffold at (0,3,2); `theme.css` ties that specificity and wins by source order (vendor link comes first). html gets BOTH `print-pdf` and `reveal-print` classes in print view. The refill also forces `justify-content: flex-start !important` AND `flex-direction: column !important` - slide types that center themselves LIVE via `section:has(> .quote/.statement)` lose that fight and print top-anchored (bitten once), and two-body sections would have their halves STACKED into separate pages by the flex-column refill; both need their own scoped restore inside the refill block (re-centering for quote/statement, `display: grid !important` + row template for `:has(> .body ~ .body)`). Cover/divider already have one.
-- **`.pdf-page` needs a definite height in print**: vendor sets only `position:relative; overflow:hidden` in CSS plus an inline `height` derived from the print layout (`pageHeight + pdfPageHeightOffset`, default -1) - not a reliable 720px (re-verified on 5.2.1 and 6.0.2 in obscura: removing the rule gave 5 tall pages / 48 PDF pages; not checked in real Chrome). Without `html.print-pdf .reveal .pdf-page { height: 720px !important }`, the flex chain (section=>body=>figure=>img, `flex-basis:auto`) resolves to an image's INTRINSIC size - a tall asset grows the page past 720px and printToPDF paginates it into extra pages (bitten once with a 700x2000 jpg; live view is unaffected - definite heights all the way down).
-- **Dark slides CAN carry a `.body`** (the closing thank-you does), but slot typography hard-codes `var(--ink)` - `.dark` must remap `--ink`/`--ink-soft` or body panels render near-black on navy (the same class of failure as the "black Times" trap above).
-- **A stray `</section>` mid-deck orphan slides silently**: the HTML parser ignores unmatched close tags, so slides escape their stack wrapper, render and COUNT fine, but navigate as their own top-level sections (bitten once: stats..code escaped the 02 stack). The probe asserts the top-level group count - keep it in sync when sections change.
-- **The `@container` wrap block must stay AFTER the feature-block base rules**: equal specificity, later source order wins. Placed earlier, `.steps > * { flex: 1 }` reverts the container rule's flex-basis to `0` - and zero-basis flex items never wrap (six steps in one colliding row; bitten once).
-- **An element can never query ITSELF**: a `@container` rule's matched element resolves the condition against its nearest container ANCESTOR. The col=>body migration bit this twice: (1) the steps' `flex-wrap: wrap` sat inside the query with `.steps` as the matched element - the old `.col` was its ancestor container, the `.body` is not, so the rule silently died and six steps crammed into one row; fix: `flex-wrap: wrap` is unconditional on `.steps` (basis-0 children at full width never overflow, so wrap can't trigger there). Stats survived only because its rule targets `.stats > div`, whose ancestor container is `.stats` itself. (2) `.quote`'s own `margin: 0 auto` outranks the slot's `.body > * { margin: 0 }` (equal specificity, later source order), and auto margins opt a grid item out of stretching - combined with the slot's `container-type: inline-size` the shrink-to-fit width resolves to 0 and the quote collapsed to its padding (bitten once); the slot-quote rule zeroes the margin explicitly (`.statement` has the identical slot rule - it collapsed the same way as a pair half). Audit rule: every `@container` block's matched elements must have a container ancestor by construction. (Every `.body > *` panel IS a size container - `container-type: inline-size`, theme.css - so `.stats > div` queries `.stats`; `.body` itself is not one.)
-- **Percentage grid rows need definite heights down the chain**: the lone-figure full-height rule works because the body stretches its row first (or, in a two-body row, the flex line stretches each body to the same definite height), then the body can resolve `grid-template-rows: 100%`. A body with an auto-height row resolves `100%` to auto and the figure sags to its `min-height` floor (bitten once).
-- **Stack sections must stay EMPTY** (a parent with nested children discards its own content) and **padding-free** (`.reveal .stack { padding: 0 }` - vendor zeroes only their vertical padding; `box-sizing:border-box` handles the rest, the rule is insurance).
-- **Bare non-`.body` wrapper `<div>`s still escape slot typography** - the slot rule selects `.body > *`; a stray wrapper div between the section and its panels (or inside a `.body`) escapes it. `.body` is the only sanctioned wrapper. Panels are NEVER direct section children - a slide's content lives inside `.body` divs, always.
-- **Paired halves must start flush**: per-block margin nudges (`steps`/`stats`/`timeline` set margin-top in their own rules) outrank the slot's `.body > * { margin: 0 }` by later source order - in a two-body slide they sink the left block's top edge below the right half's first paragraph (a full em off; bitten once). The scoped rule `section:has(> .body ~ .body) > .body > :first-child { margin-top: 0 }` restores flushness for the FIRST paired panel only; full-width slides keep their nudges. Audit pairs whenever you add or change a block's margin nudge. Related trap: `.steps`' `gap` is shared row AND column - tightening it re-flows the wrap pattern in halves (2-per-row became 3-per-row), it is not a vertical-only knob.
-- **Overflow is a silent failure**: fixed 1280x720 canvas, no auto-fit; an overfull slide just clips - split it. Probes catch out-of-canvas overflow, **not intra-slide overlap**. After typography changes, eyeball the densest slides (`out/png/`).
+- Element styles must set `font-family`/`color` directly; CSS variables alone leave black Times on dark slides.
+- Reveal stamps inline `display:block` on slides -> flex scaffold needs `.reveal .slides section { display: flex !important }` on ALL slides.
+- Config needs `center: false`, or reveal stamps an inline `top` that shifts PDF pages.
+- Print refill must tie vendor specificity `html.reveal-print ...section` (win by source order; vendor link first). It forces `flex-start` and `flex-direction: column`, so quote/statement (re-center) and two-body sections (`display: grid` + row template) need their own restore inside the refill block.
+- `html.print-pdf .reveal .pdf-page { height: 720px !important }` is required, or an image's intrinsic size grows the page and the PDF paginates into extras.
+- Dark slides with a `.body` must remap `--ink`/`--ink-soft` (slot typography hard-codes `var(--ink)`).
+- A stray `</section>` orphans slides into their own top-level sections. The probe asserts the top-level group count (7); keep it in sync.
+- The `@container` wrap block must stay AFTER the feature-block base rules (equal specificity; `.steps > * { flex: 1 }` would kill wrapping).
+- An element can't query itself: every `@container`-matched element needs a container ANCESTOR. `.body` is not a container; each `.body > *` panel is. `.steps` `flex-wrap: wrap` is unconditional for this reason. `.quote` and `.statement` must zero their own margin (auto margins + `container-type` collapse them to 0 width).
+- Percentage grid rows (lone-figure full height) need definite heights down the whole chain, or the figure sags to its `min-height`.
+- Stack sections must stay EMPTY and padding-free.
+- Bullets: `list-style` is dead; markers are `li::before` flex boxes. Sized pseudo-elements need `display:block`; no smaller font-size on text markers; `content:''` + `width:auto` collapses to 0.
+- Paired halves must start flush: per-block margin nudges (`steps`/`stats`/`timeline`) outrank the slot reset, so a scoped rule zeroes the first paired panel's top margin. Audit pairs when changing nudges. `.steps` `gap` is shared row AND column - tightening it re-flows the wrap.
 
-## Updating vendored files (reveal.js ESM + CSS)
-
-All three files come from jsDelivr - flat, self-contained ESM, no nested imports:
+## Updating vendored files
 
 ```
-# set VER to the pinned reveal.js version. 6.x names: dist/reveal.mjs, dist/plugin/notes.mjs
-# (5.x had dist/reveal.esm.js and plugin/notes/notes.esm.js at the package ROOT);
-# we save them under the stable local names below so template.html needs no edit:
 VER=<pinned-version>
 curl -fsSL -o vendor/reveal.esm.js https://cdn.jsdelivr.net/npm/reveal.js@$VER/dist/reveal.mjs
 curl -fsSL -o vendor/reveal.css    https://cdn.jsdelivr.net/npm/reveal.js@$VER/dist/reveal.css
 curl -fsSL -o vendor/notes.esm.js  https://cdn.jsdelivr.net/npm/reveal.js@$VER/dist/plugin/notes.mjs
 ```
 
-After downloading:
+Then: `cmp <(curl -fsSL <url>) vendor/<file>` for each (byte-identical is the truth); `grep -n "^import\|from "` must show the JS stays import-free; re-verify every landmine above against the new source; `bun test` and eyeball `out/png/`.
 
-1. Sanity-check against the CDN: `cmp <(curl -fsSL <url>) vendor/<file>` for each - they must be byte-identical to the pinned release. The `cmp` is the source of truth (5.x banners lagged one version; 6.x files carry no banner).
-2. `grep -n "^import\|from "` the JS files - they must stay import-free (or only self-referencing); the deck ships zero deps beyond these files.
-3. Re-verify every **Landmine** against the new source - especially `center:false` inline-top stamping, the print-refill specificity race, and `.pdf-page` height (bitten before; re-probed on the 5.2.0->5.2.1 and 5.2.1->6.0.2 bumps - all landmines held; 6.x also makes the progress bar `clamp(3px,.75vmin,10px)` thick, a cosmetic vendor default).
-4. Live-verify with the probe suite (protocol below): `bun test`, then eyeball `out/png/`.
+## Probe gotchas
 
-## Probe protocol (obscura, its bundled headless browser)
-
-**`tests/` is ONE self-contained suite, run from the repo root** (`bun test`; per-suite timeouts are passed to `test()` - bun's default is 5s): `tests/probe.test.ts` starts its own webserver (ephemeral port, via `startServer()` exported from `serve.ts`) and its own obscura on another ephemeral port (free-port bind + retry on conflicts, `--ready-file` for clean readiness, killed in `afterAll`; obscura must be on `$PATH` - it gets `--allow-private-network` so it can reach the suite's loopback webserver). It runs two test blocks: the deck probe (slide count, structural group check - exactly 7 top-level `.slides > section`: front stack + 4 section stacks + the closing thank-you stack + the merged element-audit stack - per-slide overflow + screenshots to `out/png/`, fragment advance, print-view DOM geometry (page count, tall pages, stamped inline tops), real PDF via `Page.printToPDF` + MediaBox count) and the element-audit stack audit (contrast, canvas bounds, focusability, screenshots + PDF to `out/elements/`). CDP plumbing (raw WebSocket attach/`goto`/`printParams`/obscura spawn) lives in `tests/lib.ts`, shared with `tools/shot.ts`. **Update the expected constants at the top when slides change.** Gotchas, each learned the hard way:
-
-- Humans reach the deck at `http://127.0.0.1:8000/`; the suite serves itself on an ephemeral port.
-- Navigate once per view (hash changes never fire `load`); move between slides with `Reveal.slide(h, v)` + ~1.2s settle before screenshots. **`slide()` takes stack coords, NOT flat indices** - build an `(h, v)` map from `.slides > section` children (flat indices silently navigate the wrong slides; bitten once).
-- **Test fragments FIRST, on a fresh load** - revisiting a slide leaves its fragments revealed (reveal quirk, not a bug).
-- `Reveal.next()` walks PAST the current slide once its fragments are exhausted - to advance fragments on a specific slide use `Reveal.nextFragment()` and confirm with `Reveal.getIndices()` (bitten once: measured the wrong slide and got plausible-looking numbers).
-- CDP element-**clip** screenshots beyond the viewport are unreliable - `scrollIntoView()` + settle + a plain full-viewport capture instead.
-- Obscura's CDP does not reliably honor scale/page-break print controls - export with the fixed `printParams` const (native 16:9 canvas, paper = 1280/96 × 720/96 inches, zero margins). Don't parametrize it - branching paper params on external state (env) once silently paginated 34 instead of 43 pages.
-- Scripted `.focus()` never matches `:focus-visible` and `Input.dispatchKeyEvent` is swallowed - keyboard focus cannot be simulated at all. Assert the mechanisms instead (element is focusable; the stylesheet carries the declared `:focus-visible` ring) - checking `getComputedStyle` on the focused element passes vacuously.
-- This obscura build serializes CSS only as shorthands: computed `boxShadow`/`outline` can be `""`, and cssRule `outlineStyle`/`outlineWidth` longhands read `""` while the `outline` shorthand reads fine. Check the shorthand.
-- Eval strings are template literals - `\d` collapses to `d` (no such escape) and turns a regex literal into a dud that can't match. Avoid escaped regex inside evals; `pkill -f 'obscura'` also self-matches your own shell - use `[o]bscura`.
-- Fresh tab per probe (no cache headers); find slides by heading text, not hardcoded indices. Quote/statement slides carry no h1/h2, so flat indices drift from heading counts - don't map headings to `out/png/slide-N.png` naively.
-- Slide backgrounds paint on the `.slide-background` element itself, not its `.slide-background-content` child - probe the parent.
-- PNGs are served by serve.ts from the repo root, so in-page canvas sampling works for pixel checks.
-- The suite itself can flake (CDP screenshot payload came back `undefined` once) - re-run before debugging the deck.
-- Bun landmines: `Bun.spawn`ed Subprocess has no `hasExited()` - poll `exitCode === null`; a failing `beforeAll`/`afterAll` hook fails the whole `bun test` run (shown as an `(unnamed)` test) even when every test block passes.
+- The suite can flake (e.g. undefined screenshot payload) - re-run before debugging the deck. CDP plumbing lives in `tests/lib.ts`, shared with `tools/shot.ts`.
+- `Reveal.slide(h, v)` takes stack coords, NOT flat indices; build the map from `.slides > section`. Find slides by heading text (quote/statement slides have no h1/h2).
+- Test fragments FIRST on a fresh load (revisits leave them revealed); use `Reveal.nextFragment()`, not `next()`, and confirm via `getIndices()`.
+- Navigate once per view (hash changes don't fire `load`); settle ~1.2s before screenshots; use `scrollIntoView()` + full-viewport capture, not element clips.
+- Export PDFs with the fixed `printParams` const only (16:9, zero margins); never branch it on external state.
+- Keyboard focus can't be simulated: assert focusability and the stylesheet's `:focus-visible` rule instead.
+- Obscura serializes CSS as shorthands only (`outline`, `boxShadow` longhands read `""`); check the shorthand.
+- Eval strings are template literals: `\d` collapses to `d`, so avoid escaped regex in evals. Use `pkill -f '[o]bscura'` (plain `obscura` self-matches your shell).
+- Slide backgrounds paint on `.slide-background`, not its content child.
+- Bun: poll `exitCode === null` (no `hasExited()`); a failing `beforeAll`/`afterAll` fails the whole run.
 
 ## References
 
-- Reveal.js docs: https://revealjs.com/ (PDF export, fragments, speaker notes, backgrounds)
-- Bun test runner: https://bun.com/docs/test (file discovery, `test()` timeouts, expect matches)
-- CSS container queries (the half-wrap mechanism): https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment
+- Reveal.js: https://revealjs.com/ - Bun test: https://bun.com/docs/test - Container queries: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment
