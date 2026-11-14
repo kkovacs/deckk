@@ -464,8 +464,9 @@
 /* -- Bullets: unbreakable by construction, DEPTH-AWARE ----------
    list-style is dead deck-wide; every marker is a positioned ::before
    living inside the li's own padding - nothing markup-side can move it.
-   Depth decides the marker: dot - small disc - small dot; ol: 1. => a. => i.
-   (each ol resets its own counter - numbering restarts per list). */
+   Depth decides the marker: dot - small disc - small dot; ol: always "1." at
+   every depth (numbers = a list; letters would mean "or") and each ol resets
+   its own counter - numbering restarts per list. */
 .reveal ul,
 .reveal ol {
   margin: 0.5em 0 0 0;
@@ -496,17 +497,17 @@
   counter-increment: item;
 }
 .reveal ol > li::before {
-  content: counter(item);
+  content: counter(item) ".";
   width: auto;
   background: none;
   color: var(--navy-mid);
   font-weight: 700;
 }
-/* depth 2: smaller disc (ul) / letter (ol); counters nest automatically.
+/* depth 2: smaller disc (ul) / muted number (ol); counters nest automatically.
    Text markers inherit the li's font-size - their 1.5em box stays the line box,
    so flex-centering aligns them exactly like the dots. */
 .reveal li ol > li::before {
-  content: counter(item, lower-alpha);
+  content: counter(item) ".";
   background: none;
   color: var(--ink-soft);
   font-weight: 700;
@@ -514,20 +515,12 @@
 .reveal li ul > li::before {
   background: radial-gradient(circle 2.5px, var(--navy-mid) 99%, transparent 100%) no-repeat;
 }
-/* depth 3: small dot (ul) / roman (ol) - content resets to empty (dot only);
-   the ul dot KEEPS the 1.2em box (auto width would collapse it to nothing) */
+/* depth 3: small dot (ul); a depth-3 ol keeps the depth-2 number rule above.
+   content resets to empty (dot only); the ul dot KEEPS the 1.2em box
+   (auto width would collapse it to nothing) */
 .reveal li li ul > li::before {
   content: "";
   background: radial-gradient(circle 2px, var(--ink-soft) 99%, transparent 100%) no-repeat;
-}
-/* roman numerals run wide - give depth-3 ol room so 'iii' never collides */
-.reveal li li ol > li {
-  padding-left: 1.6em;
-}
-.reveal li li ol > li::before {
-  content: counter(item, lower-roman);
-  width: auto;
-  background: none;
 }
 .reveal .dark li::before {
   background: radial-gradient(circle 3px, #aab8d4 99%, transparent 100%) no-repeat;
@@ -575,9 +568,10 @@
   object-fit: contain;
 }
 
-/* An EMPTY figure is the placeholder - pure CSS, no class, no JS.
-   Drop an <img> inside the same <figure> and the placeholder vanishes. */
-.reveal .body figure:not(:has(img, svg, picture, video, canvas)) {
+/* An EMPTY figure (no child elements at all) is the placeholder - pure CSS,
+   no class, no JS. Any content (img, svg, a div diagram...) makes it a real
+   figure, so the placeholder styling never leaks onto it. */
+.reveal .body figure:not(:has(*)) {
   flex: 1;
   min-height: 340px;
   border: 1px solid var(--hairline);
@@ -590,11 +584,11 @@
   letter-spacing: 0.2em;
   text-transform: uppercase;
 }
-.reveal .body figure:not(:has(img, svg, picture, video, canvas))::after {
+.reveal .body figure:not(:has(*))::after {
   content: "image placeholder";
 }
 /* A placeholder is a LIGHT panel even on a dark slide. */
-.reveal .dark .body figure:not(:has(img, svg, picture, video, canvas)) {
+.reveal .dark .body figure:not(:has(*)) {
   --navy: #16294f;
   --navy-mid: #2b4a8b;
   --navy-soft: #6b7a99;
@@ -973,6 +967,13 @@
   color: var(--ink-soft);
   margin-top: 1em;
   padding-left: 0.75em;
+}
+/* Statement as a SLOT PANEL (pairs): same trap as the quote below - its own
+   `margin: 0 auto` outranks the slot's `.body > * { margin: 0 }` and collapses
+   the shrink-to-fit width to 0 inside the slot's inline-size container. */
+.reveal .body > .statement {
+  font-size: 0.8em;
+  margin: 0;
 }
 /* Quote as a SLOT PANEL (pairs): size steps down for a half, and margin
    must be zeroed explicitly - .quote's own `margin: 0 auto` is LATER in

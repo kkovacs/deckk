@@ -36,7 +36,7 @@
   after changing these rules.
   Swapping a <ul> for <p>s changes nothing visually - typography lives on
   the slot (a direct child of .body), not the tag. Nested lists:
-  just nest - depth picks the marker (dot - small disc - small dot; ol: 1. a. i.).
+  just nest - depth picks the marker (dot - small disc - small dot; ol: 1. at every depth).
   An EMPTY <figure> shows a placeholder; drop an <img> inside it when the
   asset lands (assets/ dir). Images CROP to fill (object-fit: cover) -
   class="nocrop" on the <img> flips to contain (letterbox, never crop).
@@ -177,7 +177,7 @@
           </section>
 
           <!-- stacked lists: panels stack in ONE body, full width. Depth picks
-             the marker: ul => dot / dash / small dot; ol => 1. / a. / i. -->
+             the marker: ul => dot / dash / small dot; ol => 1. at every depth -->
           <section>
             <p class="kicker">Mechanisms &middot; Depth</p>
             <h2>Depth picks the marker &mdash; just nest</h2>
@@ -208,9 +208,9 @@
                   Phase two &mdash; the counter restarts per list
                   <ol>
                     <li>
-                      Lettered sub-point
+                      Nested sub-point
                       <ol>
-                        <li>Roman detail</li>
+                        <li>Third-level detail</li>
                       </ol>
                     </li>
                   </ol>
