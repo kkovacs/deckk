@@ -7,9 +7,9 @@ Zero-dependency reveal.js presentation deck (pinned release, see **Updating vend
 ## Authoring a new deck from these templates (the clone-and-go flow)
 
 1. Read the cheat-sheet comment at the top of `template.html` - the complete authoring spec. The deck's own slides double as templates: copy the nearest skeleton (full-width, pair, feature block, code slab...) and replace its content.
-2. Keep the skeleton around the content: cover + agenda up front, one stack `<section>` per topic with its `.dark divider`, the closing thank-you stack (classic closer with the 2-col variant nested under it), and the element-audit stack last. **Exactly 7 top-level groups** (asserted by the probe).
-3. If the section count changed, update the expected constants near the top of `tests/probe.test.ts` (`SLIDES_TOTAL`, `GROUPS`, `AUDIT_SLIDES`) - the only place they live.
-4. Run `bun test` (setup: probe protocol below); eyeball the densest slides in `out/png/`.
+2. When creating a **real** presentation (as opposed to working on the templates), you **must not** update the tests - the tests are for when working on **the template**. Working on the template, and creating presentations from it are **two very different work modes**, you are only in one of them at once.
+3. If you have the tools, use browser screenshots to check the slides you are working on, check for overlaps, content being off the screen, other style mistakes, etc.
+4. If you need to write custom CSS, put it into index.html – **do not** edit the template. That way we can `git pull` template updates into an existing presentation.
 
 ## Architecture
 
@@ -30,7 +30,7 @@ Zero-dependency reveal.js presentation deck (pinned release, see **Updating vend
 - **The type scale is ONE knob** - `.reveal`'s `font-size`; every size and rhythm in the deck is em-based off it, so rescaling is a one-line edit (the deck ships enlarged ~+20% from the original design size for legibility). The fixed canvas is the constraint: the enlarged type was paid for by tightening the vertical rhythm (list item margins, steps gap/padding), and dense feature blocks overflow first - pay with rhythm or trimmed copy, never with hand-set font-sizes.
 - **Bullets are unbreakable by construction**: `list-style` is dead deck-wide; markers are positioned `li::before` flex boxes, depth picks the glyph - nothing markup-side can move them.
 - **Native mechanisms only**: fragments, gradients, speaker notes, `?print-pdf` are all reveal/CSS - never custom JS.
-- **Deliberately unsupported** (user decision): charts (build one-offs as inline SVG / styled tables when needed), weighted splits, `.lead`, segbar/compare/imggrid - killed in the 2025 radical-simplification rewrite; git history has them. `.agenda` demos itself on the front-matter slide only (never paired).
+- **Deliberately unsupported** (user decision): charts (build one-offs as inline SVG / styled tables when needed), weighted splits. 
 
 ## Landmines (verified against the pinned reveal source + live probes)
 
@@ -73,7 +73,7 @@ After downloading:
 
 **`tests/` is ONE self-contained suite, run from the repo root** (`bun test`; per-suite timeouts are passed to `test()` - bun's default is 5s): `tests/probe.test.ts` starts its own webserver (ephemeral port, via `startServer()` exported from `serve.ts`) and its own obscura on another ephemeral port (free-port bind + retry on conflicts, `--ready-file` for clean readiness, killed in `afterAll`; obscura must be on `$PATH` - it gets `--allow-private-network` so it can reach the suite's loopback webserver). It runs two test blocks: the deck probe (slide count, structural group check - exactly 7 top-level `.slides > section`: front stack + 4 section stacks + the closing thank-you stack + the merged element-audit stack - per-slide overflow + screenshots to `out/png/`, fragment advance, print-view DOM geometry (page count, tall pages, stamped inline tops), real PDF via `Page.printToPDF` + MediaBox count) and the element-audit stack audit (contrast, canvas bounds, focusability, screenshots + PDF to `out/elements/`). CDP plumbing (raw WebSocket attach/`goto`/`printParams`) is inlined in the file. **Update the expected constants at the top when slides change.** Gotchas, each learned the hard way:
 
-- Humans reach the deck at `http://127.0.0.1:8000/template.html`; the suite serves itself on an ephemeral port. obscura is the ONLY CDP browser: `/json/*` requests are not answered 404 but connection-reset (ECONNRESET), which looks exactly like the attach succeeding and the socket dying - attach through `/devtools/browser` only.
+- Humans reach the deck at `http://127.0.0.1:8000/`; the suite serves itself on an ephemeral port.
 - Navigate once per view (hash changes never fire `load`); move between slides with `Reveal.slide(h, v)` + ~1.2s settle before screenshots. **`slide()` takes stack coords, NOT flat indices** - build an `(h, v)` map from `.slides > section` children (flat indices silently navigate the wrong slides; bitten once).
 - **Test fragments FIRST, on a fresh load** - revisiting a slide leaves its fragments revealed (reveal quirk, not a bug).
 - `Reveal.next()` walks PAST the current slide once its fragments are exhausted - to advance fragments on a specific slide use `Reveal.nextFragment()` and confirm with `Reveal.getIndices()` (bitten once: measured the wrong slide and got plausible-looking numbers).
