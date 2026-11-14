@@ -17,7 +17,7 @@ Zero-dependency reveal.js presentation deck (pinned release, see **Updating vend
 - `index.html` - the minimal one-slide starter for the clone-and-go flow: same head + reveal config as `template.html`, cover points to it, served at `/`. The probe suite navigates `/template.html` directly.
 - `serve.ts` - zero-dep static server (`bun stdlib only`); `startServer({hostname, port, dir})` is exported so the probe suite can self-host on an ephemeral port. CLI: starter at `/`, deck at `/template.html`, loopback by default (`HOST`/`PORT` env override).
 - `theme.css` - the design + the composition system (rationale below). Applies `font-family`/`color` directly to elements - declaring CSS variables alone leaves text at browser-default black Times on dark slides (bitten twice; the pixel probe catches it).
-- `vendor/` - reveal 5.2.1 (pinned; the in-file banner still reads 5.2.0 - `cmp` against 5.2.1 is the truth), vendored from jsDelivr: `reveal.esm.js`, `reveal.css`, `notes.esm.js` - all self-contained (flat, no plugin subdir; the notes plugin import in `template.html` points at `./vendor/notes.esm.js`). To bump, see **Updating vendored files** below. **Re-verify every landmine below against the new source + live probes** (this doc's landmines were re-verified that way once already; don't cargo-cult them either way).
+- `vendor/` - reveal 6.0.2 (pinned; `cmp` against the CDN is the truth; the 5.x banner used to lag, 6.x has no banner), vendored from jsDelivr: `reveal.esm.js`, `reveal.css`, `notes.esm.js` - all self-contained (flat, no plugin subdir; the notes plugin import in `template.html` points at `./vendor/notes.esm.js`). To bump, see **Updating vendored files** below. **Re-verify every landmine below against the new source + live probes** (this doc's landmines were re-verified that way once already; don't cargo-cult them either way).
 - `assets/` - real images; an EMPTY `<figure>` still renders the pure-CSS placeholder until an `<img>` lands inside it.
 - Autoformatting: `bun x prettier --write --print-width 140 template.html theme.css` - the `--print-width 140` flag is load-bearing: at the default 80, Prettier re-folds long lines and mid-tag wraps them (`></span` dangles). Tables are compact one-line rows and exempt via `<!-- prettier-ignore -->`. Run the probe suite after reformatting.
 
@@ -37,7 +37,7 @@ Zero-dependency reveal.js presentation deck (pinned release, see **Updating vend
 - **The display landmine**: reveal keeps slides rendered by stamping *inline* `display:block`, which persists past the class flip - that IS the fade mechanism (the outgoing slide stays rendered). Inline style beats any class rule, so the flex scaffold needs `.reveal .slides section { display: flex !important }` - scoped to ALL slides, because visited nested slides can sit with **no state class at all**. Without it, the outgoing slide re-flows to block layout mid-transition (the visible "jump before the transition").
 - **`center: false` in the config** - reveal's default vertical centering stamps an inline `top` on every slide that persists into the PDF and pushes pages half a page down. `center:false` makes reveal write `top:""` instead, so the print refill needs no `top:0!important`.
 - **Print refill**: vendor CSS (`html.reveal-print ...section{padding:0!important; display:block!important}`) strips the scaffold at (0,3,2); `theme.css` ties that specificity and wins by source order (vendor link comes first). html gets BOTH `print-pdf` and `reveal-print` classes in print view. The refill also forces `justify-content: flex-start !important` AND `flex-direction: column !important` - slide types that center themselves LIVE via `section:has(> .quote/.statement)` lose that fight and print top-anchored (bitten once), and two-body sections would have their halves STACKED into separate pages by the flex-column refill; both need their own scoped restore inside the refill block (re-centering for quote/statement, `display: grid !important` + row template for `:has(> .body ~ .body)`). Cover/divider already have one.
-- **`.pdf-page` needs a definite height in print**: vendor sets only `position:relative; overflow:hidden` in CSS plus an inline `height` derived from the print layout (`pageHeight + pdfPageHeightOffset`, default -1) - not a reliable 720px (re-verified on 5.2.1 in obscura: removing the rule gave 5 tall pages / 48 PDF pages; not checked in real Chrome). Without `html.print-pdf .reveal .pdf-page { height: 720px !important }`, the flex chain (section=>body=>figure=>img, `flex-basis:auto`) resolves to an image's INTRINSIC size - a tall asset grows the page past 720px and printToPDF paginates it into extra pages (bitten once with a 700x2000 jpg; live view is unaffected - definite heights all the way down).
+- **`.pdf-page` needs a definite height in print**: vendor sets only `position:relative; overflow:hidden` in CSS plus an inline `height` derived from the print layout (`pageHeight + pdfPageHeightOffset`, default -1) - not a reliable 720px (re-verified on 5.2.1 and 6.0.2 in obscura: removing the rule gave 5 tall pages / 48 PDF pages; not checked in real Chrome). Without `html.print-pdf .reveal .pdf-page { height: 720px !important }`, the flex chain (section=>body=>figure=>img, `flex-basis:auto`) resolves to an image's INTRINSIC size - a tall asset grows the page past 720px and printToPDF paginates it into extra pages (bitten once with a 700x2000 jpg; live view is unaffected - definite heights all the way down).
 - **Dark slides CAN carry a `.body`** (the closing thank-you does), but slot typography hard-codes `var(--ink)` - `.dark` must remap `--ink`/`--ink-soft` or body panels render near-black on navy (the same class of failure as the "black Times" trap above).
 - **A stray `</section>` mid-deck orphan slides silently**: the HTML parser ignores unmatched close tags, so slides escape their stack wrapper, render and COUNT fine, but navigate as their own top-level sections (bitten once: stats..code escaped the 02 stack). The probe asserts the top-level group count - keep it in sync when sections change.
 - **The `@container` wrap block must stay AFTER the feature-block base rules**: equal specificity, later source order wins. Placed earlier, `.steps > * { flex: 1 }` reverts the container rule's flex-basis to `0` - and zero-basis flex items never wrap (six steps in one colliding row; bitten once).
@@ -53,19 +53,20 @@ Zero-dependency reveal.js presentation deck (pinned release, see **Updating vend
 All three files come from jsDelivr - flat, self-contained ESM, no nested imports:
 
 ```
-# set VER to the pinned reveal.js version, then - note the plugin lives at the
-# package ROOT, not under dist/ (a /dist/plugin/... URL 404s on jsDelivr):
+# set VER to the pinned reveal.js version. 6.x names: dist/reveal.mjs, dist/plugin/notes.mjs
+# (5.x had dist/reveal.esm.js and plugin/notes/notes.esm.js at the package ROOT);
+# we save them under the stable local names below so template.html needs no edit:
 VER=<pinned-version>
-curl -fsSL -o vendor/reveal.esm.js https://cdn.jsdelivr.net/npm/reveal.js@$VER/dist/reveal.esm.js
+curl -fsSL -o vendor/reveal.esm.js https://cdn.jsdelivr.net/npm/reveal.js@$VER/dist/reveal.mjs
 curl -fsSL -o vendor/reveal.css    https://cdn.jsdelivr.net/npm/reveal.js@$VER/dist/reveal.css
-curl -fsSL -o vendor/notes.esm.js  https://cdn.jsdelivr.net/npm/reveal.js@$VER/plugin/notes/notes.esm.js
+curl -fsSL -o vendor/notes.esm.js  https://cdn.jsdelivr.net/npm/reveal.js@$VER/dist/plugin/notes.mjs
 ```
 
 After downloading:
 
-1. Sanity-check against the CDN: `cmp <(curl -fsSL <url>) vendor/<file>` for each - they must be byte-identical to the pinned release. Don't panic if the `/*! reveal.js ... */` banner inside `reveal.esm.js` reads one version behind: upstream's version string can lag; the `cmp` above is the source of truth.
+1. Sanity-check against the CDN: `cmp <(curl -fsSL <url>) vendor/<file>` for each - they must be byte-identical to the pinned release. The `cmp` is the source of truth (5.x banners lagged one version; 6.x files carry no banner).
 2. `grep -n "^import\|from "` the JS files - they must stay import-free (or only self-referencing); the deck ships zero deps beyond these files.
-3. Re-verify every **Landmine** against the new source - especially `center:false` inline-top stamping, the print-refill specificity race, and `.pdf-page` height (bitten before; re-probed during the one bump so far).
+3. Re-verify every **Landmine** against the new source - especially `center:false` inline-top stamping, the print-refill specificity race, and `.pdf-page` height (bitten before; re-probed on the 5.2.0->5.2.1 and 5.2.1->6.0.2 bumps - all landmines held; 6.x also makes the progress bar `clamp(3px,.75vmin,10px)` thick, a cosmetic vendor default).
 4. Live-verify with the probe suite (protocol below): `bun test`, then eyeball `out/png/`.
 
 ## Probe protocol (obscura, its bundled headless browser)
