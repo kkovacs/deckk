@@ -1003,7 +1003,7 @@
   display: flex;
   flex-wrap: wrap;
   /* LANDMINE: gap is shared row AND column - tightening it re-flows the
-     half-width wrap (2-per-row became 3-per-row). */
+     half-width wrap (items per row change). */
   gap: 1em;
   margin-top: 1em;
 }
@@ -1104,24 +1104,22 @@
   color: rgba(255, 255, 255, 0.25);
 }
 
-/* LANDMINE: this block MUST stay AFTER the feature-block base rules (equal
-   specificity, source order wins; earlier, `.steps > * { flex: 1 }` resets
-   the basis to 0 and zero-basis items never wrap). Every @container-matched
-   element needs a container ANCESTOR (each .body > * panel is one; .body is not).
-   -- Narrow slot (a half): stats and steps wrap to two per row --
+/* -- Narrow slot (a half): stats and steps wrap to two per row --
    flex: 1 1 0 would squeeze five-six items into one unreadable row.
    The query resolves against the slot's size container (the .stats/.steps
-   blocks themselves - their CHILDREN are the matched elements, since an
-   element can never query ITSELF: that's why the steps' flex-wrap lives
-   unconditionally in the base rule above, where at full width the
-   basis-0 children can never overflow so wrap never triggers). Halves
-   wrap, full width doesn't. Lives AFTER the feature blocks so it wins
-   the flex-basis cascade. */
+   blocks themselves - their CHILDREN are the matched elements). LANDMINE: an
+   element can never query ITSELF, which is why the steps' flex-wrap lives
+   unconditionally in the base rule above (at full width the basis-0
+   children can never overflow, so wrap never triggers); every
+   @container-matched element needs a container ANCESTOR (each .body > *
+   panel is one; .body is not). Halves wrap, full width doesn't. The
+   selectors carry `.body >` so they out-rank the base flex rules
+   regardless of source order. */
 @container (max-width: 26em) {
-  .reveal .stats > div {
+  .reveal .body > .stats > div {
     flex: 1 1 40%;
   }
-  .reveal .steps > * {
+  .reveal .body > .steps > * {
     flex: 1 1 28%;
   }
 }
@@ -1178,14 +1176,14 @@
 }
 
 /* -- PDF export (?print-pdf) -------------------------------------
-   LANDMINE: the refill forces flex-start + column, so every self-centering or
-   grid slide type needs its own restore below (quote/statement, two-body,
-   cover/divider); the vendor link comes first so equal specificity wins here.
    Reveal re-parents each slide into a .pdf-page wrapper and vendor CSS
    force-strips padding + sets display:block!important at (0,3,2); these
-   rules tie that specificity (and win by source order) to restore the
-   flex scaffold. The old "inline top" landmine is gone at the root:
-   center:false means reveal never stamps it. */
+   rules tie that specificity (and win by source order - the vendor link
+   comes first) to restore the flex scaffold. Vendor never touches
+   flex-direction/justify-content/align-items/grid templates, so the live
+   rules (centered cover/quote/statement, two-body grid) carry over; only
+   `display` needs restoring. The old "inline top" landmine is gone at the
+   root: center:false means reveal never stamps it. */
 html.print-pdf .reveal .pause-overlay,
 html.print-pdf .reveal::after {
   display: none !important; /* empty reveal pseudo adds a 38px line box in auto-height print */
@@ -1199,33 +1197,13 @@ html.print-pdf .reveal .pdf-page {
    printToPDF paginates it into extra pages (bitten once, tall.jpg). */
 html.print-pdf .reveal .pdf-page > section {
   display: flex !important;
-  flex-direction: column !important;
-  justify-content: flex-start !important;
   padding: var(--pad-y) var(--pad-x) !important;
   height: 100% !important;
   left: 0 !important;
   overflow: hidden !important;
 }
-html.print-pdf .reveal .pdf-page > section.cover,
-html.print-pdf .reveal .pdf-page > section.divider {
-  justify-content: center !important;
-}
-/* Quote and statement center themselves live (section:has(> .quote/.statement)),
-   but the refill's flex-start wins over them - restore the centering here. */
-html.print-pdf .reveal .pdf-page > section:has(> .quote),
-html.print-pdf .reveal .pdf-page > section:has(> .statement) {
-  justify-content: center !important;
-}
-html.print-pdf .reveal .pdf-page > section.cover {
-  align-items: center !important;
-  text-align: center;
-}
-/* Two-body sections lay out as a GRID (THE ONE RULE) - the refill's
-   flex !important would stack the halves vertically and paginate them
-   onto separate pages; restore the grid at refill specificity. */
+/* Two-body sections are a GRID live - the flex !important above would stack
+   the halves onto separate pages. Only display needs restoring. */
 html.print-pdf .reveal .pdf-page > section:has(> .body ~ .body) {
   display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
-  grid-template-rows: auto auto minmax(0, 1fr) auto !important;
-  gap: 0 var(--gap) !important;
 }

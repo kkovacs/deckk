@@ -17,19 +17,34 @@ const lineOf = (pos: number) => src.slice(0, pos).split("\n").length;
 const strip = (s: string) =>
   s.replace(/<[^>]*>/g, "").replace(/&mdash;/g, "-").replace(/&middot;/g, ".").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
 
-type Sec = { pos: number; attrs: string; kids: number; end: number };
+type Sec = { pos: number; open: number; attrs: string; kids: number; end: number; parent?: Sec };
+const warn = (msg: string) => console.error("WARN " + msg);
 const secs: Sec[] = [];
 const stack: Sec[] = [];
 for (const m of src.matchAll(/<(\/?)section\b([^>]*)>/g)) {
   if (m[1]) {
     const s = stack.pop();
     if (s) s.end = m.index!;
+    else warn(`unmatched </section> at line ${lineOf(m.index!)} - an earlier stray close tag orphans slides from their stack`);
   } else {
     if (stack.length) stack.at(-1)!.kids++;
-    const s = { pos: m.index!, attrs: m[2], kids: 0, end: src.length };
+    const s: Sec = { pos: m.index!, open: m.index! + m[0].length, attrs: m[2], kids: 0, end: src.length, parent: stack.at(-1) };
     secs.push(s);
     stack.push(s);
   }
+}
+
+for (const s of stack) warn(`<section> at line ${lineOf(s.pos)} is never closed`);
+// reveal discards a stack's OWN content: between its nested <section>s there must be nothing
+for (const st of secs.filter((s) => s.kids)) {
+  let at = st.open;
+  let own = "";
+  for (const k of secs.filter((c) => c.parent === st)) {
+    own += src.slice(at, k.pos);
+    at = k.end; // a child's own close tag is stripped below
+  }
+  own = (own + src.slice(at, st.end)).replace(/<\/section\s*>/g, "").trim();
+  if (own) warn(`stack at line ${lineOf(st.pos)} has its own content (reveal discards it): ${strip(own).slice(0, 40) || own.slice(0, 40)}`);
 }
 
 const tops = secs.filter((s) => !secs.some((t) => t !== s && t.pos < s.pos && t.end >= s.end));

@@ -106,7 +106,9 @@
            stack wrappers must stay EMPTY; slides are nested children.
            LANDMINE: a stray </section> orphans slides into their own
            top-level sections (they still render and count) - the probe
-           asserts the top-level group count (GROUPS in tests/probe.test.ts). -->
+           asserts the top-level group count (GROUPS in tests/probe.test.ts),
+           and `bun tools/slides.ts` warns about unmatched </section> and
+           stacks with their own content. -->
         <section>
           <section class="dark cover" data-background-gradient="var(--grad-navy)">
             <p class="kicker">A Guided Tour</p>
