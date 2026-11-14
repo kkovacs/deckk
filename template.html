@@ -52,6 +52,8 @@
 
     Statement (call to action): <div class="statement">One line.</div>
       - the <p> right after it is the subtitle, auto-styled.
+      - also works as a SLOT PANEL in a pair (statement | image): stays large,
+        centered horizontally and vertically in its half.
     Quote: <div class="quote">...</div> + <p>Attribution</p> (flat siblings;
       also works as a SLOT PANEL in a pair - size steps down automatically).
     Dark slides (title / section / thank-you):
@@ -739,6 +741,19 @@ def total(cart):
             <div class="body center">
               <p>The right body opts into vertical centering with .body.center - its two paragraphs ride as one centered group.</p>
               <p>Drop an &lt;img&gt; inside the empty figure when the asset lands; the placeholder vanishes by itself.</p>
+            </div>
+          </section>
+
+          <!-- statement | image - the big line is centered in its half, both ways -->
+          <section>
+            <p class="kicker">Pairs &middot; Statement + Image</p>
+            <h2>One big line, one picture</h2>
+            <div class="body">
+              <div class="statement">Say the one thing that matters.</div>
+              <p>The subtitle follows, centered with it.</p>
+            </div>
+            <div class="body">
+              <figure><img src="assets/wide.jpg" alt="A fjord seen from a cliff edge" /></figure>
             </div>
           </section>
         </section>

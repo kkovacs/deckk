@@ -15,7 +15,7 @@ import { startServer } from "../serve";
 import { sleep, tab, goto, printParams, startObscura } from "./lib"; // CDP plumbing lives in lib.ts
 
 // -- expected deck shape - the only place these live (update when sections change)
-const SLIDES_TOTAL = 43; // ~32 showcase + 11 element-audit
+const SLIDES_TOTAL = 44; // ~33 showcase + 11 element-audit
 const GROUPS = 7; // front + 4 sections + thank-you + element-audit
 const AUDIT_SLIDES = 11; // slides in the element-audit stack (= GROUPS last)
 const timeout = 240_000; // default 5s is not enough for probe + settle + PDF

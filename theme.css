@@ -977,13 +977,25 @@
   margin-top: 1em;
   padding-left: 0.75em;
 }
-/* Statement as a SLOT PANEL (pairs): same trap as the quote below - its own
-   `margin: 0 auto` outranks the slot's `.body > * { margin: 0 }` and collapses
-   the shrink-to-fit width to 0 inside the slot's inline-size container. */
+/* Statement as a SLOT PANEL (pairs, e.g. statement | image): stays BIG, centered
+   horizontally AND vertically in its half.
+   LANDMINE: same trap as the quote below - the statement's own `margin: 0 auto`
+   (and the subtitle's) outranks the slot's `.body > * { margin: 0 }` and
+   collapses the shrink-to-fit width inside the slot's inline-size container.
+   Zero the margins and let both fill the column; text-align centers the text. */
 .reveal .body > .statement {
-  font-size: 0.8em;
+  font-size: 1.3em;
   margin: 0;
+  max-width: none;
 }
+.reveal .body > .statement + p {
+  margin: 0.6em 0 0;
+  max-width: none;
+}
+.reveal .body:has(> .statement) {
+  align-content: safe center;
+}
+
 /* LANDMINE (.statement has the identical rule above): quote as a SLOT PANEL
    (pairs): size steps down for a half, and margin
    must be zeroed explicitly - .quote's own `margin: 0 auto` is LATER in
