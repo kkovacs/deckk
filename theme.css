@@ -16,8 +16,9 @@
      plain CSS. If a feature needs JS, it is the wrong feature.
 
    The AUTHORING SPEC (how to write a slide) is the cheat-sheet comment
-   at the top of index.html - keep this file and that spec in sync.
-   Architecture rationale + verified landmines: AGENTS.md.
+   at the top of template.html - keep this file and that spec in sync.
+   Traps live next to their rules as "LANDMINE:" comments (grep for it);
+   template-dev workflow: docs/template-dev.md.
    ================================================================== */
 
 :root {
@@ -56,6 +57,8 @@
   --r-heading-color: var(--navy);
   --r-link-color: var(--navy-mid);
 
+  /* LANDMINE: font-family/color must be applied directly to elements, not only
+     declared as variables - variables alone leave black Times on dark slides. */
   font-size: 38.4px;
   font-family: var(--sans);
   color: var(--ink);
@@ -69,7 +72,7 @@
   --r-heading-color: #ffffff;
   --r-main-color: #dfe4ee;
   --hairline: var(--hairline-dark);
-  /* panel ink flips too - slot typography hard-codes var(--ink), so a
+  /* LANDMINE: panel ink flips too - slot typography hard-codes var(--ink), so a
      dark slide carrying a .body (thank-you+image) needs these remapped */
   --ink: #dfe4ee;
   --ink-soft: #b2bfd8;
@@ -128,7 +131,7 @@
   height: 100%;
 }
 
-/* THE display landmine (verified against reveal 5.2.1 source + live probe):
+/* LANDMINE (display; verified against reveal source + live probe):
    reveal keeps slides rendered by stamping inline display:block - and it
    persists past the class flip, which is exactly how the outgoing slide
    stays visible during the fade. Inline style beats any class rule, so the
@@ -142,7 +145,8 @@
   display: flex !important;
 }
 
-/* Stack sections are the position:absolute containing blocks for their
+/* LANDMINE: stack sections must stay EMPTY (template.html) and padding-free.
+   They are the position:absolute containing blocks for their
    nested slides - keep them padding-free (vendor zeroes only their
    vertical padding; box-sizing:border-box already neutralizes the rest,
    this is cheap insurance). */
@@ -258,7 +262,8 @@
 .reveal section:has(> .body ~ .body) > .body {
   grid-row: 3;
 } /* col 1 / 2 by auto-placement */
-/* Paired halves: the FIRST panel must start flush with the neighbor's
+/* LANDMINE: paired halves - audit pairs whenever a block's margin nudge changes.
+   The FIRST panel must start flush with the neighbor's
    first panel. Per-block margin nudges (steps 1em, stats 0.4em,
    timeline 2em - later in source order than the slot's margin:0)
    would offset the left top edge below the right paragraph top. */
@@ -329,7 +334,8 @@
 }
 
 /* A lone figure fills its column's height - full-bleed placeholder or
-   image. Percentage rows need definite heights down the chain: in a
+   image. LANDMINE: percentage rows need definite heights down the whole
+   chain (else the figure sags to its min-height): in a
    two-body row the flex line stretches each .body to the same definite
    height, then the body can hand that height to the figure via
    grid-template-rows: 100%. The neighboring body gets the same height
@@ -462,6 +468,9 @@
 }
 
 /* -- Bullets: unbreakable by construction, DEPTH-AWARE ----------
+   LANDMINE: ::before with content:'' + width:auto collapses to 0; sized
+   pseudo-elements need display:block; text-marker rules must NOT set a
+   smaller font-size (the 1.5em box must match the line box).
    list-style is dead deck-wide; every marker is a positioned ::before
    living inside the li's own padding - nothing markup-side can move it.
    Depth decides the marker: dot - small disc - small dot; ol: always "1." at
@@ -975,7 +984,8 @@
   font-size: 0.8em;
   margin: 0;
 }
-/* Quote as a SLOT PANEL (pairs): size steps down for a half, and margin
+/* LANDMINE (.statement has the identical rule above): quote as a SLOT PANEL
+   (pairs): size steps down for a half, and margin
    must be zeroed explicitly - .quote's own `margin: 0 auto` is LATER in
    source order than the slot's `.body > * { margin: 0 }` (equal spec),
    and auto margins opt a grid item out of stretching: combined with the
@@ -992,6 +1002,8 @@
 .reveal .steps {
   display: flex;
   flex-wrap: wrap;
+  /* LANDMINE: gap is shared row AND column - tightening it re-flows the
+     half-width wrap (2-per-row became 3-per-row). */
   gap: 1em;
   margin-top: 1em;
 }
@@ -1092,7 +1104,11 @@
   color: rgba(255, 255, 255, 0.25);
 }
 
-/* -- Narrow slot (a half): stats and steps wrap to two per row --
+/* LANDMINE: this block MUST stay AFTER the feature-block base rules (equal
+   specificity, source order wins; earlier, `.steps > * { flex: 1 }` resets
+   the basis to 0 and zero-basis items never wrap). Every @container-matched
+   element needs a container ANCESTOR (each .body > * panel is one; .body is not).
+   -- Narrow slot (a half): stats and steps wrap to two per row --
    flex: 1 1 0 would squeeze five-six items into one unreadable row.
    The query resolves against the slot's size container (the .stats/.steps
    blocks themselves - their CHILDREN are the matched elements, since an
@@ -1162,6 +1178,9 @@
 }
 
 /* -- PDF export (?print-pdf) -------------------------------------
+   LANDMINE: the refill forces flex-start + column, so every self-centering or
+   grid slide type needs its own restore below (quote/statement, two-body,
+   cover/divider); the vendor link comes first so equal specificity wins here.
    Reveal re-parents each slide into a .pdf-page wrapper and vendor CSS
    force-strips padding + sets display:block!important at (0,3,2); these
    rules tie that specificity (and win by source order) to restore the
@@ -1174,7 +1193,7 @@ html.print-pdf .reveal::after {
 html.print-pdf .reveal .pdf-page {
   height: 720px !important;
 }
-/* ^ vendor gives .pdf-page only position+overflow, no height - without a
+/* ^ LANDMINE: vendor gives .pdf-page only position+overflow, no height - without a
    definite height the flex chain (section=>body=>figure=>img) resolves to
    the image's INTRINSIC size: a tall asset grows the page past 720px and
    printToPDF paginates it into extra pages (bitten once, tall.jpg). */

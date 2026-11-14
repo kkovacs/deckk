@@ -103,7 +103,10 @@
 
         <!-- Front matter: Cover, then Agenda.
            XXX reveal gotcha: a stack parent's OWN content is discarded -
-           stack wrappers must stay EMPTY; slides are nested children. -->
+           stack wrappers must stay EMPTY; slides are nested children.
+           LANDMINE: a stray </section> orphans slides into their own
+           top-level sections (they still render and count) - the probe
+           asserts the top-level group count (GROUPS in tests/probe.test.ts). -->
         <section>
           <section class="dark cover" data-background-gradient="var(--grad-navy)">
             <p class="kicker">A Guided Tour</p>

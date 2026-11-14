@@ -14,6 +14,6 @@ Fixed 1280×720 canvas, no build step, no package.json, zero custom JS, fully st
 - **Present**: Usual reveal.js controls: arrows / hash URLs (`#/<section>/<slide>`); `class="fragment"` on any element makes it appear on click; **S** opens the speaker-notes view (`<aside class="notes">` in any slide)
 - **Print/PDF**: Add `?print-pdf` to the URL and print to PDF (A4 landscape, one proportional 16:9 slide per page, all fragments shown, clickable source URLs)
 - **Human's** instructions: read the cheat-sheet at the top of `template.html`.
-- **AI's** instructions, architecture, design rationale, and landmines: [AGENTS.md](AGENTS.md)
-- **Verify**: `bun test` — fully self-contained: serves the deck itself and runs its own obscura headless browser on ephemeral ports (obscura must be installed). Setup + gotchas: `AGENTS.md`.
+- **AI's** instructions: [AGENTS.md](AGENTS.md); template development (landmines, vendoring, probe gotchas): [docs/template-dev.md](docs/template-dev.md)
+- **Verify**: `bun test` — fully self-contained: serves the deck itself and runs its own obscura headless browser on ephemeral ports (obscura must be installed). Setup + gotchas: `docs/template-dev.md`.
 - **HTML element audit**: the last stack of `template.html` (the merged element-audit fixture) covers semantic text, headings, lists, tables, code tokens, images/SVG, forms, disclosure, media, and dark slides. `bun test` audits it with everything else (screenshots + report in `out/`).
